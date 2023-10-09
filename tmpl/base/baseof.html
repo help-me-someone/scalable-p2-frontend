@@ -1,0 +1,13 @@
+{{ define "baseHTML" }}
+
+<!DOCTYPE html>
+<html>
+{{ template "headHTML" . }}
+
+<body class="bg-base">
+{{ block "content" . }}
+{{ end }}
+</body>
+
+</html>
+{{ end }}
