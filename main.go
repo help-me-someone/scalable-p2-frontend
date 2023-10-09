@@ -1,45 +1,61 @@
 package main
 
 import (
-	"embed"
-	"html/template"
 	"log"
 	"net/http"
+	"strings"
 )
 
-func getTemplates() *template.Template {
-	t := template.Must(template.ParseGlob("tmpl/*.html"))
-	template.Must(t.ParseGlob("tmpl/base/*.html"))
-
-	return t
-}
-
-// NOTE(Appy): Yes globals are ugly, but live with it for now.
-var (
-	templates *template.Template
-)
-
-func init() {
-	templates = getTemplates()
-}
-
-//go:generate npm run build
-//go:embed static
-var static embed.FS
+// This is a minimalistic frontend which will be able to serve requests
+// by using the URL path as the name of the template which should be served.
+// Eg. localhost:8000/register --> tmpl/register.html
+//
+// NOTE(Appy): You should NOT need to really change anything in here.
+// HTMX, tailwind and alpinejs has been integrated into the HTML.
 
 func main() {
+	// Create templates.
+	templates := NewTemplates()
+
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.FileServer(http.FS(static)))
 
-	hello_handler := func(w http.ResponseWriter, req *http.Request) {
-		err := templates.ExecuteTemplate(w, "baseHTML", nil)
+	// Feel free to add this later.
+	favicon_handler := func(w http.ResponseWriter, req *http.Request) {
+		// Do nothing... unless...
+	}
+
+	error404_handler := func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		templates.Render(w, "404.html", nil)
+	}
+
+	// Template substitutor. (Check template.go for more info)
+	template_handler := func(w http.ResponseWriter, req *http.Request) {
+		path := req.URL.Path
+
+		// Handling index.
+		if len(path) == 0 {
+			path = "index.html"
+		}
+
+		// Append html extension if missing.
+		if !strings.Contains(path, ".html") {
+			path = path + ".html"
+		}
+		err := templates.Render(w, path, nil)
 
 		if err != nil {
-			log.Print(err)
+			error404_handler(w, req)
 		}
 	}
 
-	mux.HandleFunc("/", hello_handler)
-	log.Println("Listening for requests at http://localhost:8000")
-	log.Fatal(http.ListenAndServe(":8000", mux))
+	// Handlers.
+	mux.HandleFunc("/favicon.ico", favicon_handler)
+	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(template_handler)))
+
+	// Serve.
+	port := ":8000"
+	log.Println("Listening for requests at http://localhost" + port)
+	log.Fatal(http.ListenAndServe(port, mux))
 }

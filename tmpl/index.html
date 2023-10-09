@@ -1,3 +1,5 @@
+{{ template "baseof.html" . }}
+
 {{ define "content" }}
-<h1 class="text-text-base" x-data="{ message: 'I ❤️ Alpine' }" x-text="message"></h1>
+<h1 x-data="{ message: 'I ❤️ Alpine' }" x-text="message"></h1>
 {{ end }}
