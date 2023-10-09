@@ -16,7 +16,7 @@ import (
 // HTMX, tailwind and alpinejs has been integrated into the HTML.
 
 // Set this to true, for production.
-const debug = true
+const debug = false
 const template_path = "templates/*.tmpl"
 
 var executor TemplateExecutor
