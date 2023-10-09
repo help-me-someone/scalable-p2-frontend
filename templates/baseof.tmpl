@@ -1,4 +1,7 @@
+<!DOCTYPE html>
+<html>
 <head>
+
 <!-- HTMX -->
 <script src="https://unpkg.com/htmx.org@1.9.4" integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
@@ -9,3 +12,9 @@
 <!-- Tailwind -->
 <link rel="stylesheet" href="/static/css/tailwind.css" />  
 </head>
+
+<body class="bg-base text-text-base">
+{{ yield }}
+</body>
+
+</html>

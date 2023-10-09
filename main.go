@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
-	"strings"
+
+	"github.com/unrolled/render"
+	// "strings"
 )
 
 // This is a minimalistic frontend which will be able to serve requests
@@ -13,9 +15,27 @@ import (
 // NOTE(Appy): You should NOT need to really change anything in here.
 // HTMX, tailwind and alpinejs has been integrated into the HTML.
 
+// Set this to true, for production.
+const debug = true
+const template_path = "templates/*.tmpl"
+
+var executor TemplateExecutor
+
 func main() {
+
 	// Create templates.
-	templates := NewTemplates()
+	if debug {
+		executor = DebugTemplateExecutor{template_path}
+	} else {
+		executor = ReleaseTemplateExecutor{
+			r: render.New(render.Options{
+				DisableHTTPErrorRendering: true,
+				Directory:                 "templates",
+				Layout:                    "baseof",
+				FileSystem:                &render.EmbedFileSystem{FS: tmplFS},
+				Extensions:                []string{".html", ".tmpl"}}),
+		}
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.FileServer(http.FS(static)))
@@ -25,28 +45,19 @@ func main() {
 		// Do nothing... unless...
 	}
 
-	error404_handler := func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		templates.Render(w, "404.html", nil)
-	}
-
 	// Template substitutor. (Check template.go for more info)
 	template_handler := func(w http.ResponseWriter, req *http.Request) {
 		path := req.URL.Path
 
 		// Handling index.
 		if len(path) == 0 {
-			path = "index.html"
+			path = "index"
 		}
 
-		// Append html extension if missing.
-		if !strings.Contains(path, ".html") {
-			path = path + ".html"
-		}
-		err := templates.Render(w, path, nil)
+		err := executor.ExecuteTemplate(w, path, nil)
 
 		if err != nil {
-			error404_handler(w, req)
+			executor.ExecuteTemplateStatus(w, "404", nil, http.StatusNotFound)
 		}
 	}
 
