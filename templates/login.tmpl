@@ -2,10 +2,10 @@
   <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
     <div class="w-full rounded-lg shadow border md:mt-0 sm:max-w-md xl:p-0 dark:bg-surface-0 border-gray-700">
       <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-        <form class="space-y-4 md:space-y-6" action="#">
+        <form id='login-form' hx-post='http://localhost:7887/signin' class="space-y-2">
           <div>
-            <label for="email" class="text-white block mb-2 text-sm font-medium">Email</label>
-            <input type="email" name="email" id="email"
+            <label for="username" class="text-white block mb-2 text-sm font-medium">Email</label>
+            <input type="email" name="username" id="username"
               class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-surface-1 dark:border-gray-600"
               placeholder="bob@john.com" required="">
           </div>
