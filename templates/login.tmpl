@@ -28,17 +28,21 @@
                       body: JSON.stringify(info),
                       headers: {
                         'Content-Type': 'application/json'
-                      }
+                      },
+                      credentials: 'include'
                     }
               )
               .then(response => {
                   return response.json()
               })              
               .then(data => {
-                if (data.success) window.location.replace('http://localhost:8000/upload')
+                if (data.success) {
+                  document.cookie = data.cookie
+                  window.location.replace('http://localhost:8000/upload')
+                }
                 else alert(data.message)
               })
-              .catch(error => alert('Is server running...?'))
+              .catch(error => alert(error))
               "
               class=" w-full text-white bg-base focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-lg
               text-sm px-5 py-2.5 text-center">

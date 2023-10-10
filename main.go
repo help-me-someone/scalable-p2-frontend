@@ -1,11 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/unrolled/render"
-	// "strings"
 )
 
 // This is a minimalistic frontend which will be able to serve requests
@@ -23,6 +24,59 @@ var executor TemplateExecutor
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
+type Handler = func(http.ResponseWriter, *http.Request)
+
+func NeedAuth(handler Handler) Handler {
+	return func(wr http.ResponseWriter, re *http.Request) {
+
+		// Retrieve cookie, if DNE then just redirect.
+		cookie, err := re.Cookie("token")
+		if err != nil {
+			http.Redirect(wr, re, "/login", http.StatusFound)
+			return
+		}
+		_ = cookie
+
+		// New client to perform out request.
+		client := &http.Client{}
+
+		// Set up a new request.
+		req, err := http.NewRequest("GET", "http://localhost:7887/auth", nil)
+		if err != nil {
+			http.Redirect(wr, re, "/login", http.StatusFound)
+			return
+		}
+
+		// Carry out the auth request with the cookie.
+		req.AddCookie(cookie)
+
+		// Carry out the request.
+		resp, err := client.Do(req)
+		if err != nil {
+			// Just redirect by default.
+			http.Redirect(wr, re, "/login", http.StatusFound)
+			return
+		}
+
+		var response Response
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			// Failed to deocde, let's redirect anyways.
+			http.Redirect(wr, re, "/login", http.StatusFound)
+			return
+		}
+
+		if !response.Authenticated {
+			// Not authenticated, we redirect as well.
+			http.Redirect(wr, re, "/login", http.StatusFound)
+			return
+		}
+
+		// Okay. We are authenticated.
+		handler(wr, re)
+	}
 }
 
 func main() {
@@ -52,7 +106,7 @@ func main() {
 	// Template substitutor. (Check template.go for more info)
 	template_handler := func(w http.ResponseWriter, req *http.Request) {
 		enableCors(&w)
-		path := req.URL.Path
+		path := strings.TrimPrefix(req.URL.Path, "/")
 
 		// Handling index.
 		if len(path) == 0 {
@@ -68,7 +122,8 @@ func main() {
 
 	// Handlers.
 	mux.HandleFunc("/favicon.ico", favicon_handler)
-	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(template_handler)))
+	mux.HandleFunc("/login", template_handler)
+	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler))))
 
 	// Serve.
 	port := ":8000"
