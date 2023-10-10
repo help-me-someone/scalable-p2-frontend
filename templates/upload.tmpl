@@ -1,0 +1,36 @@
+<section>
+  <div class="flex flex-col items-center justify-center px-56 py-8 mx-auto h-screen lg:py-0">
+    <div class="w-full h-full rounded-lg shadow border dark:bg-surface-0 my-8 border-gray-700">
+      <div class="mx-12 my-4">
+        <p class="w-full text-center text-5xl font-semibold">
+          Upload
+        </p>
+        <form
+          hx-on="htmx:configRequest: event.detail.headers=''; event.detail.headers['Content-Type']='application/x-www-form-urlencoded; charset=UTF-8'"
+          id='form' hx-encoding='multipart/form-data' hx-post='http://localhost:7000/' class="space-y-2">
+
+          <!-- File name -->
+          <div>
+            <label for="file_name" class="text-white block mb-2 text-sm font-medium">File name</label>
+            <input type="text" name="file_name" id="file_name"
+              class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-surface-1 dark:border-gray-600"
+              required="">
+          </div>
+
+          <!-- File data -->
+          <div>
+            <label for="file" class="text-white block mb-2 text-sm font-medium">Choose file</label>
+            <input type="file" name="file" id="file"
+              class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-surface-1 dark:border-gray-600"
+              required="">
+          </div>
+
+          <button type="submit"
+            class="w-full text-white bg-base focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+            Upload
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

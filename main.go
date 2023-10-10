@@ -21,6 +21,10 @@ const template_path = "templates/*.tmpl"
 
 var executor TemplateExecutor
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func main() {
 
 	// Create templates.
@@ -47,6 +51,7 @@ func main() {
 
 	// Template substitutor. (Check template.go for more info)
 	template_handler := func(w http.ResponseWriter, req *http.Request) {
+		enableCors(&w)
 		path := req.URL.Path
 
 		// Handling index.
