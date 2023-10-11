@@ -125,6 +125,7 @@ func main() {
 	// Handlers.
 	mux.HandleFunc("/favicon.ico", favicon_handler)
 	mux.HandleFunc("/login", template_handler)
+	mux.HandleFunc("/forgot_password", template_handler)
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler))))
 
 	// Serve.
