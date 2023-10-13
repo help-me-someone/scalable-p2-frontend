@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/unrolled/render"
@@ -28,73 +31,87 @@ type Handler = func(http.ResponseWriter, *http.Request)
 func NeedAuth(handler Handler) Handler {
 	return func(wr http.ResponseWriter, re *http.Request) {
 
-		// Retrieve cookie, if DNE then just redirect.
-		cookie, err := re.Cookie("token")
+		// Retrieve claims, if DNE then just redirect.
+		claims, err := ValidateJWTTOken(re)
 		if err != nil {
+			log.Println("NO TOKEN!!!")
 			http.Redirect(wr, re, "/login", http.StatusFound)
 			return
 		}
-		_ = cookie
-
-		// New client to perform out request.
-		client := &http.Client{}
-
-		// Set up a new request.
-		req, err := http.NewRequest("GET", "http://localhost:7887/auth", nil)
-		if err != nil {
-			http.Redirect(wr, re, "/login", http.StatusFound)
-			return
-		}
-
-		// Carry out the auth request with the cookie.
-		req.AddCookie(cookie)
-
-		// Carry out the request.
-		resp, err := client.Do(req)
-		if err != nil {
-			// Just redirect by default.
-			http.Redirect(wr, re, "/login", http.StatusFound)
-			return
-		}
-
-		var response Response
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			// Failed to deocde, let's redirect anyways.
-			http.Redirect(wr, re, "/login", http.StatusFound)
-			return
-		}
-
-		if !response.Authenticated {
-			// Not authenticated, we redirect as well.
-			http.Redirect(wr, re, "/login", http.StatusFound)
-			return
-		}
-
-		// Create a new context with the user name specified.
-		ctx := context.WithValue(re.Context(), "username", response.Username)
 
 		// Debug
-		log.Printf("Sending request with user: %s\n", ctx.Value("username"))
+		log.Printf("Sending request with user: %s\n", claims.Username)
+
+		ctx := context.WithValue(re.Context(), "username", claims.Username)
 
 		// Okay. We are authenticated.
 		handler(wr, re.WithContext(ctx))
 	}
 }
 
+type URLContext struct {
+	API_GATEWAY_URL, AUTH_URL string
+}
+
+func (u *URLContext) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimPrefix(r.URL.Path, "/")
+
+	// Handling index.
+	if len(path) == 0 {
+		path = "index"
+	}
+
+	log.Println("AUTH:", u.AUTH_URL)
+
+	// Cursed.... I hope no one ever sees this.
+	err := executor.ExecuteTemplate(w, path, map[string]string{
+		"AUTH_URL":        u.AUTH_URL,
+		"API_GATEWAY_URL": u.API_GATEWAY_URL,
+	})
+
+	if err != nil {
+		executor.ExecuteTemplateStatus(w, "404", nil, http.StatusNotFound)
+	}
+}
+
 func main() {
+	API_GATEWAY_URL := os.Getenv("API_GATEWAY_URL")
+	AUTH_URL := os.Getenv("AUTH_URL")
+	log.Println("API gateway url:", API_GATEWAY_URL)
+	log.Println("AUTH_URL gateway url:", AUTH_URL)
 
 	// Create templates.
 	if debug {
 		executor = DebugTemplateExecutor{template_path}
 	} else {
+		funcs := map[string]any{
+			"map": func(pairs ...any) (map[string]any, error) {
+				if len(pairs)%2 != 0 {
+					return nil, errors.New("misaligned map")
+				}
+
+				m := make(map[string]any, len(pairs)/2)
+
+				for i := 0; i < len(pairs); i += 2 {
+					key, ok := pairs[i].(string)
+
+					if !ok {
+						return nil, fmt.Errorf("cannot use type %T as map key", pairs[i])
+					}
+					m[key] = pairs[i+1]
+				}
+				return m, nil
+			},
+		}
 		executor = ReleaseTemplateExecutor{
 			r: render.New(render.Options{
 				DisableHTTPErrorRendering: true,
 				Directory:                 "templates",
 				Layout:                    "baseof",
 				FileSystem:                &render.EmbedFileSystem{FS: tmplFS},
-				Extensions:                []string{".html", ".tmpl"}}),
+				Extensions:                []string{".html", ".tmpl"},
+				Funcs:                     []template.FuncMap{funcs},
+			}),
 		}
 	}
 
@@ -106,27 +123,19 @@ func main() {
 		// Do nothing... unless...
 	}
 
-	// Template substitutor. (Check template.go for more info)
-	template_handler := func(w http.ResponseWriter, req *http.Request) {
-		path := strings.TrimPrefix(req.URL.Path, "/")
-
-		// Handling index.
-		if len(path) == 0 {
-			path = "index"
-		}
-
-		err := executor.ExecuteTemplate(w, path, nil)
-
-		if err != nil {
-			executor.ExecuteTemplateStatus(w, "404", nil, http.StatusNotFound)
-		}
+	template_handler := &URLContext{
+		AUTH_URL:        AUTH_URL,
+		API_GATEWAY_URL: API_GATEWAY_URL,
 	}
 
 	// Handlers.
 	mux.HandleFunc("/favicon.ico", favicon_handler)
-	mux.HandleFunc("/login", template_handler)
-	mux.HandleFunc("/forgot_password", template_handler)
-	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler))))
+
+	log.Println("API_GATEWAY_URL gateway url:", API_GATEWAY_URL)
+	log.Println("AUTH_URL gateway url:", AUTH_URL)
+	mux.Handle("/login", template_handler)
+	mux.Handle("/forgot_password", template_handler)
+	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))
 
 	// Serve.
 	port := ":8000"

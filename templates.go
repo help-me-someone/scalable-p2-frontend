@@ -6,9 +6,13 @@ package main
 
 import (
 	"embed"
-	"github.com/unrolled/render"
+	"errors"
+	"fmt"
+	"html/template"
 	"io"
 	"net/http"
+
+	"github.com/unrolled/render"
 )
 
 // DO NOT TOUCH.
@@ -32,14 +36,35 @@ type DebugTemplateExecutor struct {
 }
 
 func (e DebugTemplateExecutor) ExecuteTemplateStatus(w io.Writer, name string, data interface{}, status int) error {
+
+	funcs := map[string]any{
+		"map": func(pairs ...any) (map[string]any, error) {
+			if len(pairs)%2 != 0 {
+				return nil, errors.New("misaligned map")
+			}
+
+			m := make(map[string]any, len(pairs)/2)
+
+			for i := 0; i < len(pairs); i += 2 {
+				key, ok := pairs[i].(string)
+
+				if !ok {
+					return nil, fmt.Errorf("cannot use type %T as map key", pairs[i])
+				}
+				m[key] = pairs[i+1]
+			}
+			return m, nil
+		},
+	}
 	r := render.New(render.Options{
 		DisableHTTPErrorRendering: true,
 		Directory:                 "templates",
 		Layout:                    "baseof",
 		Extensions:                []string{".html", ".tmpl"},
+		Funcs:                     []template.FuncMap{funcs},
 	})
 
-	return r.HTML(w, status, name, nil)
+	return r.HTML(w, status, name, data)
 }
 
 func (e DebugTemplateExecutor) ExecuteTemplate(w io.Writer, name string, data interface{}) error {
@@ -51,7 +76,7 @@ type ReleaseTemplateExecutor struct {
 }
 
 func (e ReleaseTemplateExecutor) ExecuteTemplateStatus(w io.Writer, name string, data interface{}, status int) error {
-	return e.r.HTML(w, status, name, nil)
+	return e.r.HTML(w, status, name, data)
 }
 
 func (e ReleaseTemplateExecutor) ExecuteTemplate(w io.Writer, name string, data interface{}) error {

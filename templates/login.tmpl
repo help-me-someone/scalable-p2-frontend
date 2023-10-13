@@ -22,7 +22,7 @@
               </a>
             </div>
             <button @click="
-              fetch('http://localhost:7887/signin', 
+              fetch('http://{{.AUTH_URL}}/signin', 
                     {
                       method: 'POST',
                       body: JSON.stringify(info),
@@ -37,8 +37,8 @@
               })              
               .then(data => {
                 if (data.success) {
-                  document.cookie = data.cookie
-                  window.location.replace('http://localhost:8000/upload')
+                  document.cookie = 'token=' + data.cookie
+                  window.location.href = '/upload'
                 }
                 else alert(data.message)
               })
