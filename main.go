@@ -50,22 +50,21 @@ func NeedAuth(handler Handler) Handler {
 }
 
 type URLContext struct {
-	API_GATEWAY_URL, AUTH_URL string
+	API_GATEWAY_URL string
 }
 
 func (u *URLContext) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/")
+
+	log.Println("Handling:", path)
 
 	// Handling index.
 	if len(path) == 0 {
 		path = "index"
 	}
 
-	log.Println("AUTH:", u.AUTH_URL)
-
 	// Cursed.... I hope no one ever sees this.
 	err := executor.ExecuteTemplate(w, path, map[string]string{
-		"AUTH_URL":        u.AUTH_URL,
 		"API_GATEWAY_URL": u.API_GATEWAY_URL,
 	})
 
@@ -76,9 +75,7 @@ func (u *URLContext) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	API_GATEWAY_URL := os.Getenv("API_GATEWAY_URL")
-	AUTH_URL := os.Getenv("AUTH_URL")
-	log.Println("API gateway url:", API_GATEWAY_URL)
-	log.Println("AUTH_URL gateway url:", AUTH_URL)
+	log.Println("API_GATEWAY_URL:", API_GATEWAY_URL)
 
 	// Create templates.
 	if debug {
@@ -124,7 +121,6 @@ func main() {
 	}
 
 	template_handler := &URLContext{
-		AUTH_URL:        AUTH_URL,
 		API_GATEWAY_URL: API_GATEWAY_URL,
 	}
 
@@ -132,7 +128,6 @@ func main() {
 	mux.HandleFunc("/favicon.ico", favicon_handler)
 
 	log.Println("API_GATEWAY_URL gateway url:", API_GATEWAY_URL)
-	log.Println("AUTH_URL gateway url:", AUTH_URL)
 	mux.Handle("/login", template_handler)
 	mux.Handle("/forgot_password", template_handler)
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))

@@ -22,7 +22,7 @@
               </a>
             </div>
             <button @click="
-              fetch('http://{{.AUTH_URL}}/signin', 
+              fetch('http://{{.API_GATEWAY_URL}}/auth/signin', 
                     {
                       method: 'POST',
                       body: JSON.stringify(info),
