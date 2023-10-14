@@ -50,7 +50,14 @@ async function wasClicked() {
   var url
 
   try {
-    const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/upload')
+    console.log("Sending: ", document.cookie)
+    const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/upload', {
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'X-Custom-Header': document.cookie,
+      }
+    })
     const json_response = await response.json()
 
     console.log(json_response)
@@ -64,12 +71,14 @@ async function wasClicked() {
     
   } catch(error) {
     alert(error)
+    return
   }
 
   try {
     const response = await fetch(url, {
       method: 'PUT',
-      body: file
+      body: file,
+      Origin: window.Origin
     })
 
     if (response.ok) {
