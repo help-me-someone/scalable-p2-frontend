@@ -10,12 +10,25 @@
         </p>
 
         <div>
-            <video data-dashjs-player autoplay src="http://localhost:8000/video/output/stream.mpd" controls></video>
+            <video id="videoPlayer" controls></video>
         </div>
-
+        
       </div>
     </div>
   </div>
 </section>
 
 <script src="static/js/dash.all.min.js"></script>
+<script>
+    (function(){
+        var url = "http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb/stream.mpd";
+        var player = dashjs.MediaPlayer().create();
+        player.setXHRWithCredentialsForType("MPD", true);
+        player.setXHRWithCredentialsForType("XLinkExpansion", true);
+        player.setXHRWithCredentialsForType("InitializationSegment", true);
+        player.setXHRWithCredentialsForType("IndexSegment", true);
+        player.setXHRWithCredentialsForType("MediaSegment", true);
+        player.setXHRWithCredentialsForType("BitstreamSwitchingSegment", true);
+        player.initialize(document.querySelector("#videoPlayer"), url, true);
+    })();
+</script>
