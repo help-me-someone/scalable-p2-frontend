@@ -41,14 +41,16 @@
 
 <script>
 async function wasClicked() {
-  console.log("Clicked")
+  // Retrieve the file.
   var files = document.getElementById("customFile").files
 
   // We only have 1 file.
   var file = files[0]
 
   var url
+  var filekey
 
+  // Get the presigned url.
   try {
     console.log("Sending: ", document.cookie)
     const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/upload', {
@@ -64,6 +66,7 @@ async function wasClicked() {
 
     if (json_response.success) {
       url = json_response.url
+      filekey = json_response.key
     } else {
       alert('Failed to generate presigned url.')
       return
@@ -74,6 +77,9 @@ async function wasClicked() {
     return
   }
 
+  console.log("File key:", filekey)
+
+  // Call the presigned url.
   try {
     const response = await fetch(url, {
       method: 'PUT',
@@ -89,6 +95,21 @@ async function wasClicked() {
 
   } catch (error) {
     alert(error)
+  }
+
+  // Trigger the video saving pipeline.
+  try {
+    const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/save', {
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'X-Custom-Header': document.cookie,
+        'X-Video-Name': filekey,
+      }
+    })
+  } catch (error) {
+    
   }
 }
 
