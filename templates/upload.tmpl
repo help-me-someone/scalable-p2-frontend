@@ -88,30 +88,34 @@ async function wasClicked() {
     })
 
     if (response.ok) {
-      alert('uploaded')
+      // Trigger the video saving pipeline.
+      alert('Uploaded to s3')
+      try {
+        const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/save', {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'include',
+          headers: {
+            'X-Custom-Header': document.cookie,
+            'X-Video-Name': filekey,
+          }
+        })
+        if (response.ok) {
+          alert('Successfully saved')
+        } else {
+          alert('Failed to save')
+        }
+      } catch (error) {
+        alert('Failed to save: ', erro)
+        return
+      }
     } else {
-      alert('ggs')
+      alert('Failed to upload to s3')
+      return
     }
-
   } catch (error) {
     alert(error)
-  }
-
-  // Trigger the video saving pipeline.
-  try {
-    const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/save', {
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
-      headers: {
-        'X-Custom-Header': document.cookie,
-        'X-Video-Name': filekey,
-      }
-    })
-  } catch (error) {
-    
+    return
   }
 }
-
-
 </script>
