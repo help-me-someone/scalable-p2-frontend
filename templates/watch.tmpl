@@ -1,6 +1,7 @@
 {{ define "navbar-upload" }}
 {{ template "components/navbar" (map "Name" "AUTH_URL" "Value" .API_GATEWAY_URL) }}
 {{ end }}
+
 <section x-data hx-swap="none">
   <div class="flex flex-col items-center justify-center px-56 py-8 mx-auto h-screen lg:py-0">
     <div class="w-full h-full rounded-lg shadow border dark:bg-surface-0 my-8 border-gray-700">
@@ -10,25 +11,52 @@
         </p>
 
         <div>
-            <video id="videoPlayer" controls></video>
+
+          <!--
+          <video id=example-video width=600 height=300 class="video-js vjs-default-skin" controls>
+            <source
+               src="http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb"
+               type="application/x-mpegURL">
+          </video>
+
+           <video
+              id="my-video"
+              class="video-js vjs-big-play-centered vjs-theme-sea"
+              controls
+              preload="auto"
+              fluid="true"
+              >
+              <source src="http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb" type="application/x-mpegURL">
+           </video>
+          -->
+
+        <video-js id=vid1 width=600 height=300 class="vjs-default-skin" controls></video-js>
+
+        <!-- "core" version of Video.js -->
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.21.1/video.min.js"></script>
+          <script src="https://unpkg.com/browse/@videojs/http-streaming@2.6.0/dist/videojs-http-streaming.min.js"></script>         
+          <script>
+            // Global request callback defining beforeSend function, will affect every player.
+            var player = videojs('vid1');
+            player.src({
+              src: 'http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb',
+              type: 'application/x-mpegURL',
+            });
+
+            /**
+             * add manifest authorization header
+             */
+            window.xhook.before((request, callback) => {
+              // only set header request for the videojs src url (don't touch other xhr requests)
+              if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb') {
+                request.xhr.setRequestHeader('X-Custom-Header', document.cookie);
+              }
+              callback();
+            });
+          </script>
         </div>
-        
       </div>
     </div>
   </div>
 </section>
 
-<script src="static/js/dash.all.min.js"></script>
-<script>
-    (function(){
-        var url = "http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb/stream.mpd";
-        var player = dashjs.MediaPlayer().create();
-        player.setXHRWithCredentialsForType("MPD", true);
-        player.setXHRWithCredentialsForType("XLinkExpansion", true);
-        player.setXHRWithCredentialsForType("InitializationSegment", true);
-        player.setXHRWithCredentialsForType("IndexSegment", true);
-        player.setXHRWithCredentialsForType("MediaSegment", true);
-        player.setXHRWithCredentialsForType("BitstreamSwitchingSegment", true);
-        player.initialize(document.querySelector("#videoPlayer"), url, true);
-    })();
-</script>
