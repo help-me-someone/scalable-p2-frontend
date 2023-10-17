@@ -129,6 +129,7 @@ func main() {
 
 	log.Println("API_GATEWAY_URL gateway url:", API_GATEWAY_URL)
 	mux.Handle("/login", template_handler)
+	mux.Handle("/signup", template_handler)
 	mux.Handle("/forgot_password", template_handler)
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))
 

@@ -4,12 +4,29 @@
       <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
 
         <!-- Form starts here. -->
-        <form class="space-y-4 md:space-y-6" action="#">
+        <form class="space-y-4 md:space-y-6" action="" x-data="{ info : {username: null, password: null, confirm_password: null,} }" @submit.prevent="
+            fetch('http://{{.API_GATEWAY_URL}}/auth/signup', 
+                  {
+                    method: 'POST',
+                    body: JSON.stringify(info),
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                  }
+            )
+            .then(resp => {
+              return resp.json()
+            })
+            .then(r => {
+              alert(r.message)
+            })
+            .catch(e => {alert(e)})
+        ">
           <div>
-            <label for="email" class="text-white block mb-2 text-sm font-medium">Email</label>
-            <input type="email" name="email" id="email"
+            <label for="username" class="text-white block mb-2 text-sm font-medium">Username</label>
+            <input type="text" name="username" id="username"
               class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-surface-1 dark:border-gray-600"
-              placeholder="bob@john.com" required="">
+              placeholder="Username" required="" x-model="info.username">
           </div>
 
           <!-- Password -->
@@ -17,7 +34,7 @@
             <label for="password" class="text-white block mb-2 text-sm font-medium">Password</label>
             <input type="password" name="password" id="password"
               class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-surface-1 dark:border-gray-600"
-              placeholder="••••••••" required="">
+              placeholder="••••••••" required="" x-model="info.password">
           </div>
 
           <!-- Confirm Password -->
@@ -25,7 +42,7 @@
             <label for="confirm_password" class="text-white block mb-2 text-sm font-medium">Confirm Password</label>
             <input type="password" name="confirm_password" id="confirm_password"
               class="border sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-surface-1 dark:border-gray-600"
-              placeholder="••••••••" required="">
+              placeholder="••••••••" required="" x-model="info.confirm_password">
           </div>
 
           <!-- Submit Button -->
