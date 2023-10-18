@@ -35,26 +35,46 @@ type DebugTemplateExecutor struct {
 	root string
 }
 
+// Template utility functions
+func TemplateMap(pairs ...any) (map[string]any, error) {
+	if len(pairs)%2 != 0 {
+		return nil, errors.New("misaligned map")
+	}
+
+	m := make(map[string]any, len(pairs)/2)
+
+	for i := 0; i < len(pairs); i += 2 {
+		key, ok := pairs[i].(string)
+
+		if !ok {
+			return nil, fmt.Errorf("cannot use type %T as map key", pairs[i])
+		}
+		m[key] = pairs[i+1]
+	}
+	return m, nil
+}
+
+func TemplateLoop(from, to int) <-chan int {
+	ch := make(chan int)
+	go func() {
+		for i := from; i <= to; i++ {
+			ch <- i
+		}
+		close(ch)
+	}()
+	return ch
+}
+
+func TemplateAdd(a, b int) int {
+	return a + b
+}
+
 func (e DebugTemplateExecutor) ExecuteTemplateStatus(w io.Writer, name string, data interface{}, status int) error {
 
 	funcs := map[string]any{
-		"map": func(pairs ...any) (map[string]any, error) {
-			if len(pairs)%2 != 0 {
-				return nil, errors.New("misaligned map")
-			}
-
-			m := make(map[string]any, len(pairs)/2)
-
-			for i := 0; i < len(pairs); i += 2 {
-				key, ok := pairs[i].(string)
-
-				if !ok {
-					return nil, fmt.Errorf("cannot use type %T as map key", pairs[i])
-				}
-				m[key] = pairs[i+1]
-			}
-			return m, nil
-		},
+		"map":  TemplateMap,
+		"loop": TemplateLoop,
+		"add":  TemplateAdd,
 	}
 	r := render.New(render.Options{
 		DisableHTTPErrorRendering: true,

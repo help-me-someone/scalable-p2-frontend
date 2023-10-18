@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -171,6 +170,11 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func BrowseVideos(w http.ResponseWriter, r *http.Request) {
+	// TODO: Implement me!
+	executor.ExecuteTemplate(w, "browse", nil)
+}
+
 func main() {
 	API_GATEWAY_URL = os.Getenv("API_GATEWAY_URL")
 	log.Println("API_GATEWAY_URL:", API_GATEWAY_URL)
@@ -180,23 +184,9 @@ func main() {
 		executor = DebugTemplateExecutor{template_path}
 	} else {
 		funcs := map[string]any{
-			"map": func(pairs ...any) (map[string]any, error) {
-				if len(pairs)%2 != 0 {
-					return nil, errors.New("misaligned map")
-				}
-
-				m := make(map[string]any, len(pairs)/2)
-
-				for i := 0; i < len(pairs); i += 2 {
-					key, ok := pairs[i].(string)
-
-					if !ok {
-						return nil, fmt.Errorf("cannot use type %T as map key", pairs[i])
-					}
-					m[key] = pairs[i+1]
-				}
-				return m, nil
-			},
+			"map":  TemplateMap,
+			"loop": TemplateLoop,
+			"add":  TemplateAdd,
 		}
 		executor = ReleaseTemplateExecutor{
 			r: render.New(render.Options{
@@ -232,6 +222,7 @@ func main() {
 	mux.Handle("/forgot_password", template_handler)
 	mux.HandleFunc("/action_button", GetUserActionButton)
 	mux.HandleFunc("/progress", NeedAuth(GetMyVideos))
+	mux.Handle("/browse", template_handler)
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))
 
 	// Serve.
