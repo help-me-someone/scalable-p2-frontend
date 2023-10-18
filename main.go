@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/help-me-someone/scalable-p2-db/models/video"
 	"github.com/unrolled/render"
 )
 
@@ -87,6 +89,88 @@ func GetUserActionButton(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetMyVideos(w http.ResponseWriter, r *http.Request) {
+
+	username, ok := r.Context().Value("username").(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "User not logged in.",
+		})
+		return
+	}
+
+	resp, err := http.Get(fmt.Sprintf("http://db-svc:8083/user/%s/videos", username))
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Get user request failed.",
+		})
+		return
+	}
+	defer resp.Body.Close()
+
+	response := &struct {
+		Success bool          `json:"success"`
+		Message string        `json:"message"`
+		Videos  []video.Video `json:"videos"`
+	}{}
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		log.Println("Failed to decode:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Failed to decode.",
+		})
+		return
+	}
+
+	type Entry struct {
+		Video        video.Video
+		ThumbnailURL string
+	}
+	entries := make([]Entry, 0)
+
+	for _, v := range response.Videos {
+		url := fmt.Sprintf("http://back-end:7000/users/%s/videos/%s/info", username, v.Key)
+		log.Println("Accessing:", url)
+		resp, err := http.Get(url)
+		if err != nil {
+			// I don't want to throw it all away. Yes this is bad.
+			// I'm sure no one will see this though.
+			log.Println("Could not access!", err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		response := &struct {
+			Success   bool
+			Message   string
+			Video     video.Video
+			Thumbnail string
+		}{}
+		err = json.NewDecoder(resp.Body).Decode(response)
+		if err != nil {
+			continue
+		}
+
+		log.Println("Video name:", v.Name)
+
+		entries = append(entries, Entry{
+			Video:        v,
+			ThumbnailURL: response.Thumbnail,
+		})
+	}
+
+	executor.ExecuteTemplate(w, "video_progress", map[string]interface{}{
+		"Videos": entries,
+	})
+}
+
 func main() {
 	API_GATEWAY_URL = os.Getenv("API_GATEWAY_URL")
 	log.Println("API_GATEWAY_URL:", API_GATEWAY_URL)
@@ -147,6 +231,7 @@ func main() {
 	mux.Handle("/home", template_handler)
 	mux.Handle("/forgot_password", template_handler)
 	mux.HandleFunc("/action_button", GetUserActionButton)
+	mux.HandleFunc("/progress", NeedAuth(GetMyVideos))
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))
 
 	// Serve.
