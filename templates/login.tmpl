@@ -38,7 +38,7 @@
               .then(data => {
                 if (data.success) {
                   document.cookie = 'token=' + data.cookie
-                  window.location.href = '/upload'
+                  window.location.href = '/home'
                 }
                 else alert(data.message)
               })

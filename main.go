@@ -73,8 +73,22 @@ func (u *URLContext) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var API_GATEWAY_URL string
+
+func GetUserActionButton(w http.ResponseWriter, r *http.Request) {
+	claims, err := ValidateJWTTOken(r)
+	if err != nil {
+		executor.ExecuteTemplate(w, "components/login_button", nil)
+	} else {
+		executor.ExecuteTemplate(w, "components/logout_button", map[string]string{
+			"username":        claims.Username,
+			"API_GATEWAY_URL": API_GATEWAY_URL,
+		})
+	}
+}
+
 func main() {
-	API_GATEWAY_URL := os.Getenv("API_GATEWAY_URL")
+	API_GATEWAY_URL = os.Getenv("API_GATEWAY_URL")
 	log.Println("API_GATEWAY_URL:", API_GATEWAY_URL)
 
 	// Create templates.
@@ -130,7 +144,9 @@ func main() {
 	log.Println("API_GATEWAY_URL gateway url:", API_GATEWAY_URL)
 	mux.Handle("/login", template_handler)
 	mux.Handle("/signup", template_handler)
+	mux.Handle("/home", template_handler)
 	mux.Handle("/forgot_password", template_handler)
+	mux.HandleFunc("/action_button", GetUserActionButton)
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))
 
 	// Serve.
