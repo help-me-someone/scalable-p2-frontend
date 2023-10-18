@@ -19,7 +19,11 @@
             })
             .then(r => {
               alert(r.message)
-            })
+
+              if (r.success) {
+                window.location.href = '/login'
+              }
+            })            
             .catch(e => {alert(e)})
         ">
           <div>
