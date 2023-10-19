@@ -1,6 +1,9 @@
-{{ define "navbar-upload" }}
+{{ define "navbar-watch" }}
 {{ template "components/navbar" (map "Name" "AUTH_URL" "Value" .API_GATEWAY_URL) }}
 {{ end }}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.21.1/video.min.js"></script>
+<script src="https://unpkg.com/browse/@videojs/http-streaming@2.6.0/dist/videojs-http-streaming.min.js"></script> 
 
 <section x-data hx-swap="none">
   <div class="flex flex-col items-center justify-center px-56 py-8 mx-auto h-screen lg:py-0">
@@ -14,13 +17,11 @@
         <video-js id=vid1 width=600 height=300 class="vjs-default-skin" controls></video-js>
 
         <!-- "core" version of Video.js -->
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.21.1/video.min.js"></script>
-          <script src="https://unpkg.com/browse/@videojs/http-streaming@2.6.0/dist/videojs-http-streaming.min.js"></script>         
           <script>
             // Global request callback defining beforeSend function, will affect every player.
             var player = videojs('vid1');
             player.src({
-              src: 'http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb',
+              src: 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .Video }}',
               type: 'application/x-mpegURL',
             });
 
@@ -29,7 +30,7 @@
              */
             window.xhook.before((request, callback) => {
               // only set header request for the videojs src url (don't touch other xhr requests)
-              if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/user1@gmail.com/videos/KDtOJVCyN11np76cbZKF4kYHXCuSgsp7N2eKgJLVElSLxJjc0DvmtKf1wBCpoo5qmTe8P4isbJ02Pj5PCZB8O47CfBTvK8F9KgUb') {
+              if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .Video }}') {
                 request.xhr.setRequestHeader('X-Custom-Header', document.cookie);
               }
               callback();

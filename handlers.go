@@ -131,8 +131,9 @@ func HandleFeed(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	pageNumber, _ := strconv.Atoi(page)
 
 	executor.ExecuteTemplate(w, "videos", map[string]interface{}{
-		"Entries": response.Entries,
-		"Page":    pageNumber,
+		"Entries":         response.Entries,
+		"Page":            pageNumber,
+		"API_GATEWAY_URL": API_GATEWAY_URL,
 	})
 }
 
@@ -228,5 +229,46 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	executor.ExecuteTemplate(w, "video_progress", map[string]interface{}{
 		"Videos": entries,
+	})
+}
+
+// HandleWatchPage - This serves the page for watching a video.
+func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	// Retrieve the url parameters
+	username := p.ByName("username")
+	videoKey := p.ByName("video") // This is the video key.
+	if len(username) == 0 || len(videoKey) == 0 {
+		log.Println("Something went terribly wrong.")
+		return
+	}
+
+	// Request for the video information.
+	url := fmt.Sprintf("http://back-end:7000/users/%s/videos/%s/info", username, videoKey)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println("Could not access!", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Decode the response.
+	response := &struct {
+		Success   bool
+		Message   string
+		Video     video.Video
+		Thumbnail string
+	}{}
+	err = json.NewDecoder(resp.Body).Decode(response)
+	if err != nil {
+		log.Println("Failed to decode response.")
+		return
+	}
+
+	//
+	executor.ExecuteTemplate(w, "watch", map[string]interface{}{
+		"Thumbnail":       response.Thumbnail,
+		"API_GATEWAY_URL": API_GATEWAY_URL,
+		"Username":        username,
+		"Video":           videoKey,
 	})
 }
