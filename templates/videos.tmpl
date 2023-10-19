@@ -2,7 +2,6 @@
 {{ $end := add 0 18 }}
 <div class="grid grid-cols-4 gap-4 pt-4 px-4">
 {{range $i := loop 0 $amt }}
-
   <div class="max-w-sm w-full lg:max-w-full lg:flex"
     {{ if eq $i $end }}
         hx-get="/videos"
@@ -12,7 +11,7 @@
     {{ $end = add $end $amt }}
     {{ end }}
   >
-    <a href="#" class="flex flex-col items-center bg-surface-2 rounded-lg shadow md:flex-row md:max-w-xl dark:bg-transparent dark:hover:bg-surface-0">
+    <a href="#" class="flex flex-col items-center bg-surface-2 rounded-lg md:flex-row md:max-w-xl dark:bg-transparent dark:hover:bg-surface-0">
         <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg" src="https://cdn.myanimelist.net/r/200x268/images/characters/8/479213.jpg?s=af3da544ed75274abbc8942579b237f2" alt="">
         <div class="flex flex-col justify-between p-4 leading-normal">
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Help</h5>
