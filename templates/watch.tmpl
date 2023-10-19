@@ -2,10 +2,7 @@
 {{ template "components/navbar" (map "Name" "AUTH_URL" "Value" .API_GATEWAY_URL) }}
 {{ end }}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.21.1/video.min.js"></script>
-<script src="https://unpkg.com/browse/@videojs/http-streaming@2.6.0/dist/videojs-http-streaming.min.js"></script> 
-
-<section x-data hx-swap="none">
+<section>
   <div class="flex flex-col items-center justify-center px-56 py-8 mx-auto h-screen lg:py-0">
     <div class="w-full h-full rounded-lg shadow border dark:bg-surface-0 my-8 border-gray-700">
       <div class="mx-12 my-4">
@@ -17,7 +14,7 @@
         <video-js id=vid1 width=600 height=300 class="vjs-default-skin" controls></video-js>
 
         <!-- "core" version of Video.js -->
-          <script>
+          <script defer>
             // Global request callback defining beforeSend function, will affect every player.
             var player = videojs('vid1');
             player.src({

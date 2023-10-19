@@ -1,6 +1,6 @@
 {{ $end := 15 }}
 {{ $i := 0 }}
-<div class="grid grid-cols-4 gap-4 pt-4 px-4">
+<div class="grid grid-cols-4 gap-4 pt-4 px-4" x-data>
 {{ range .Entries }}
 
   <div class="max-w-sm w-full lg:max-w-full lg:flex"
@@ -11,7 +11,11 @@
         hx-swap="afterend"
     {{ end }}
   >
-    <a href="/watch/{{ .Video.Username }}/{{ .Video.Key }}" class="object-cover w-full flex flex-col items-center rounded-lg md:flex-row md:max-w-xl bg-surface-0 hover:bg-surface-1">
+    <a 
+    @click="
+      window.location = '/watch/{{ .Video.Username }}/{{ .Video.Key }}'
+    "
+    class="object-cover w-full flex flex-col items-center rounded-lg md:flex-row md:max-w-xl bg-surface-0 hover:bg-surface-1">
         <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg" src="{{ .ThumbnailURL }}" alt="">
         <div class="flex flex-col justify-between p-4 leading-normal">
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ .Video.Name }}</h5>
