@@ -223,6 +223,7 @@ func main() {
 	mux.HandleFunc("/action_button", GetUserActionButton)
 	mux.HandleFunc("/progress", NeedAuth(GetMyVideos))
 	mux.Handle("/browse", template_handler)
+	mux.Handle("/videos", template_handler)
 	mux.Handle("/", http.StripPrefix("/", http.HandlerFunc(NeedAuth(template_handler.ServeHTTP))))
 
 	// Serve.
