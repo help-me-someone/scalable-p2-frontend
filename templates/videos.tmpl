@@ -1,11 +1,12 @@
 {{ $end := 15 }}
 {{ $i := 0 }}
+{{ $PageNumber := .Page }}
 <div class="grid grid-cols-4 gap-4 pt-4 px-4" x-data>
-{{ range .Entries }}
 
+{{ range $Index, $Entry := .Entries }}
   <div class="max-w-sm w-full lg:max-w-full lg:flex"
-    {{ if eq $i $end }}
-        hx-get="/feed/16/{{ add 1 .Page }}"
+    {{ if eq $Index $end }}
+        hx-get="/feed/16/{{ mul 16 (add 1 $PageNumber) }}"
         hx-trigger="revealed"
         hx-target="closest .grid"
         hx-swap="afterend"
@@ -13,17 +14,17 @@
   >
     <a 
     @click="
-      window.location = '/watch/{{ .Video.Username }}/{{ .Video.Key }}'
+      window.location = '/watch/{{ $Entry.Video.Username }}/{{ $Entry.Video.Key }}'
     "
     class="object-cover w-full flex flex-col items-center rounded-lg md:flex-row md:max-w-xl bg-surface-0 hover:bg-surface-1">
-        <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg" src="{{ .ThumbnailURL }}" alt="">
+        <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg" src="{{ $Entry.ThumbnailURL }}" alt="">
         <div class="flex flex-col justify-between p-4 leading-normal">
-            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ .Video.Name }}</h5>
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ .Video.Username }}</p>
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ .Video.Views }} views</p>
+            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $Entry.Video.Name }}</h5>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Username }}</p>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Views }} views</p>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ add $Index $PageNumber }}</p>
         </div>
     </a>
   </div>
-  {{ $i = add 1 $i }}
   {{- end}}
 </div>

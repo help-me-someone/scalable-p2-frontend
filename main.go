@@ -39,6 +39,7 @@ func main() {
 			"loop": TemplateLoop,
 			"add":  TemplateAdd,
 			"sub":  TemplateSub,
+			"mul":  TemplateMult,
 		}
 		executor = ReleaseTemplateExecutor{
 			r: render.New(render.Options{

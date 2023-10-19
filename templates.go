@@ -73,6 +73,10 @@ func TemplateSub(a, b int) int {
 	return a - b
 }
 
+func TemplateMult(a, b int) int {
+	return a * b
+}
+
 func (e DebugTemplateExecutor) ExecuteTemplateStatus(w io.Writer, name string, data interface{}, status int) error {
 
 	funcs := map[string]any{
@@ -80,6 +84,7 @@ func (e DebugTemplateExecutor) ExecuteTemplateStatus(w io.Writer, name string, d
 		"loop": TemplateLoop,
 		"add":  TemplateAdd,
 		"sub":  TemplateSub,
+		"mul":  TemplateMult,
 	}
 	r := render.New(render.Options{
 		DisableHTTPErrorRendering: true,

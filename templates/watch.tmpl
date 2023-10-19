@@ -1,6 +1,12 @@
-<section class="flex overflow-hidden">
-  <div class="w-[73%]">
-        <div class="flex h-full items-center justify-center justify-items-center">
+<section class="flex overflow-hidden" x-data>
+  <div class="w-[73%] relative">
+        <a class="absolute left-5 top-5 w-6 h-6 z-10 cursor-pointer" @click="window.location = '/home'">
+          <svg class="w-full h-full text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+        </a>
+        
+        <div class="flex h-full items-center justify-center justify-items-center z-0">
           <video-js 
           id=vid1 
           class="vjs-default-skin" 
@@ -33,7 +39,7 @@
   </div>
 
   <!-- Side bar -->
-  <div class="w-[27%] h-screen bg-surface-0 ">
+  <div class="w-[27%] h-screen bg-surface-0">
     <div class="mx-4 my-4 flex flex-col">
       <p class="text-lg text-text-base">{{ .VideoName }}</p>
       <p class="text-sm text-text-base">By {{ .Username }}</p> 

@@ -244,7 +244,6 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 
 	// Request for the video information.
 	url := fmt.Sprintf("http://back-end:7000/users/%s/videos/%s/info", username, videoKey)
-	log.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Could not access!", err)
