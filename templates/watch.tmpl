@@ -1,24 +1,20 @@
-{{ define "navbar-watch" }}
-{{ template "components/navbar" (map "Name" "AUTH_URL" "Value" .API_GATEWAY_URL) }}
-{{ end }}
-
-<section>
-  <div class="flex flex-col items-center justify-center px-56 py-8 mx-auto h-screen lg:py-0">
-    <div class="w-full h-full rounded-lg shadow border dark:bg-surface-0 my-8 border-gray-700">
-      <div class="mx-12 my-4">
-        <p class="w-full text-center text-5xl font-semibold">
-          Video
-        </p>
-
-        <div>
-        <video-js id=vid1 width=600 height=300 class="vjs-default-skin" controls></video-js>
-
-        <!-- "core" version of Video.js -->
-          <script defer>
+<section class="flex overflow-hidden">
+  <div class="w-[73%]">
+        <div class="flex h-full items-center justify-center justify-items-center">
+          <video-js 
+          id=vid1 
+          class="vjs-default-skin" 
+          loop="true"
+          preload="auto"
+          poster="{{ .Thumbnail }}"
+          controls
+          ></video-js>
+          <!-- "core" version of Video.js -->
+          <script>
             // Global request callback defining beforeSend function, will affect every player.
-            var player = videojs('vid1');
+            var player = videojs('vid1', {autoplay: 'play'});
             player.src({
-              src: 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .Video }}',
+              src: 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .VideoKey }}',
               type: 'application/x-mpegURL',
             });
 
@@ -27,14 +23,21 @@
              */
             window.xhook.before((request, callback) => {
               // only set header request for the videojs src url (don't touch other xhr requests)
-              if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .Video }}') {
+              if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .VideoKey }}') {
                 request.xhr.setRequestHeader('X-Custom-Header', document.cookie);
               }
               callback();
             });
           </script>
         </div>
-      </div>
+  </div>
+
+  <!-- Side bar -->
+  <div class="w-[27%] h-screen bg-surface-0 ">
+    <div class="mx-4 my-4 flex flex-col">
+      <p class="text-lg text-text-base">{{ .VideoName }}</p>
+      <p class="text-sm text-text-base">By {{ .Username }}</p> 
+      <p class="text-sm text-text-base">{{ .Video.Views }} views</p>
     </div>
   </div>
 </section>

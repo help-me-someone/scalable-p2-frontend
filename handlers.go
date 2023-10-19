@@ -244,6 +244,7 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 
 	// Request for the video information.
 	url := fmt.Sprintf("http://back-end:7000/users/%s/videos/%s/info", username, videoKey)
+	log.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Could not access!", err)
@@ -264,11 +265,12 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		return
 	}
 
-	//
 	executor.ExecuteTemplate(w, "watch", map[string]interface{}{
 		"Thumbnail":       response.Thumbnail,
 		"API_GATEWAY_URL": API_GATEWAY_URL,
 		"Username":        username,
-		"Video":           videoKey,
+		"Video":           response.Video,
+		"VideoKey":        videoKey,
+		"VideoName":       response.Video.Name,
 	})
 }
