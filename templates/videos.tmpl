@@ -14,7 +14,7 @@
   >
     <a 
     @click="
-      window.location = '/watch/{{ $Entry.Video.Username }}/{{ $Entry.Video.Key }}'
+      window.location = '/watch/{{ $Entry.Video.Username }}/{{ $Entry.Video.Key }}/{{ add $Index $PageNumber }}'
     "
     class="object-cover w-full flex flex-col items-center rounded-lg md:flex-row md:max-w-xl bg-surface-0 hover:bg-surface-1">
         <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg" src="{{ $Entry.ThumbnailURL }}" alt="">

@@ -101,7 +101,6 @@ func HandleFeed(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		log.Println("Something went wrong while handing feed.")
 		return
 	}
-
 	// Retrieve the videos.
 	url := fmt.Sprintf("http://back-end:7000/video/feed/%s/%s", amount, page)
 	resp, err := http.Get(url)
@@ -135,6 +134,68 @@ func HandleFeed(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		"Page":            pageNumber,
 		"API_GATEWAY_URL": API_GATEWAY_URL,
 	})
+}
+
+func GetVideoFromRank(rank int) (*video.VideoWithUserEntry, error) {
+	type Entry struct {
+		Video        video.VideoWithUserEntry `json:"video"`
+		ThumbnailURL string                   `json:"thumbnail_url"`
+	}
+
+	type ResponsePayload struct {
+		Success bool
+		Message string
+		Entry   Entry
+	}
+
+	res := &ResponsePayload{}
+
+	// Perform the request.
+	url := fmt.Sprintf("http://back-end:7000/video/rank/%d", rank-1)
+	resp, err := http.Get(url)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		log.Println("Failed to request from the backend.")
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Decode the struct
+	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err != nil {
+		log.Println("Could not decode response body for getting info by rank number.")
+		return nil, err
+	}
+
+	return &res.Entry.Video, nil
+}
+
+func GetNextAndPreviousVideo(rank int) (map[string]*video.VideoWithUserEntry, error) {
+	res := make(map[string]*video.VideoWithUserEntry)
+
+	// Get previous
+	if rank > 0 {
+		previous, err := GetVideoFromRank(rank - 1)
+		if err != nil {
+			log.Println("Failed to get previous entry.")
+			return nil, err
+		}
+		res["previous"] = previous
+	} else {
+		res["previous"] = nil
+	}
+
+	// Get next
+	// This failing is not too bad.
+	next, err := GetVideoFromRank(rank + 1)
+	if err != nil {
+		log.Println("Failed to get next entry.")
+		res["next"] = nil
+		// TODO: Watch out for this.
+		return res, nil
+	}
+	res["next"] = next
+
+	return res, nil
 }
 
 func GetUserActionButton(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -237,7 +298,8 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	// Retrieve the url parameters
 	username := p.ByName("username")
 	videoKey := p.ByName("video") // This is the video key.
-	if len(username) == 0 || len(videoKey) == 0 {
+	rankStr := p.ByName("rank")
+	if len(username) == 0 || len(videoKey) == 0 || len(rankStr) == 0 {
 		log.Println("Something went terribly wrong.")
 		return
 	}
@@ -250,6 +312,15 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		return
 	}
 	defer resp.Body.Close()
+
+	// Request for next and previous videos name.
+	rank, _ := strconv.Atoi(rankStr)
+	// TODO: Do something about this...
+	nextPrev, err := GetNextAndPreviousVideo(rank + 1)
+	if err != nil {
+		log.Println("Get next and previous failed.")
+		return
+	}
 
 	// Decode the response.
 	response := &struct {
@@ -264,6 +335,13 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		return
 	}
 
+	if v, ok := nextPrev["previous"]; ok && v != nil {
+		log.Println("Previous Video: ", v.Name)
+	}
+	if v, ok := nextPrev["next"]; ok && v != nil {
+		log.Println("Next Video: ", v.Name)
+	}
+
 	executor.ExecuteTemplate(w, "watch", map[string]interface{}{
 		"Thumbnail":       response.Thumbnail,
 		"API_GATEWAY_URL": API_GATEWAY_URL,
@@ -271,5 +349,8 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		"Video":           response.Video,
 		"VideoKey":        videoKey,
 		"VideoName":       response.Video.Name,
+		"PreviousVideo":   nextPrev["previous"],
+		"NextVideo":       nextPrev["next"],
+		"RankNumber":      rank,
 	})
 }
