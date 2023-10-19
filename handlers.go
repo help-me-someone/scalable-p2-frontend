@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/help-me-someone/scalable-p2-db/models/video"
@@ -34,10 +35,6 @@ func (u *URLContext) ServeHTTP(w http.ResponseWriter, r *http.Request, _ httprou
 	if err != nil {
 		executor.ExecuteTemplateStatus(w, "404", nil, http.StatusNotFound)
 	}
-}
-
-type BackwardCompatibleHandler struct {
-	next http.HandlerFunc
 }
 
 func HttpNeedAuth(handler httprouter.Handle) http.HandlerFunc {
@@ -83,7 +80,8 @@ func HttpRouterNeedAuth(handler httprouter.Handle) httprouter.Handle {
 }
 
 // We perform a feed call to the backend and pass the data into our template.
-func HandleFeed(w http.ResponseWriter, r *http.Request) {
+func HandleFeed(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Println("HANDLING FEED!")
 	type EntryType struct {
 		Video        video.VideoWithUserEntry `json:"video"`
 		ThumbnailURL string                   `json:"thumbnail_url"`
@@ -95,9 +93,47 @@ func HandleFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve params.
+	amount := p.ByName("amount")
+	page := p.ByName("page")
 
-	// Retrieve the information.
-	// resp, err := http.Get()
+	if len(page) == 0 || len(amount) == 0 {
+		// Do nothing... I guess.. something went wrong...
+		log.Println("Something went wrong while handing feed.")
+		return
+	}
+
+	// Retrieve the videos.
+	url := fmt.Sprintf("http://back-end:7000/video/feed/%s/%s", amount, page)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println("Failed to request from the backend.")
+		return
+	}
+	defer resp.Body.Close()
+
+	// Decode the information.
+	type Entry struct {
+		Video        video.VideoWithUserEntry `json:"video"`
+		ThumbnailURL string                   `json:"thumbnail_url"`
+	}
+	type ResponsePayload struct {
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Entries []Entry `json:"entries"`
+	}
+	response := ResponsePayload{}
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		log.Println("Failed to decode!!")
+		return
+	}
+
+	pageNumber, _ := strconv.Atoi(page)
+
+	executor.ExecuteTemplate(w, "videos", map[string]interface{}{
+		"Entries": response.Entries,
+		"Page":    pageNumber,
+	})
 }
 
 func GetUserActionButton(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

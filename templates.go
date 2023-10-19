@@ -69,12 +69,17 @@ func TemplateAdd(a, b int) int {
 	return a + b
 }
 
+func TemplateSub(a, b int) int {
+	return a - b
+}
+
 func (e DebugTemplateExecutor) ExecuteTemplateStatus(w io.Writer, name string, data interface{}, status int) error {
 
 	funcs := map[string]any{
 		"map":  TemplateMap,
 		"loop": TemplateLoop,
 		"add":  TemplateAdd,
+		"sub":  TemplateSub,
 	}
 	r := render.New(render.Options{
 		DisableHTTPErrorRendering: true,

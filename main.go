@@ -38,6 +38,7 @@ func main() {
 			"map":  TemplateMap,
 			"loop": TemplateLoop,
 			"add":  TemplateAdd,
+			"sub":  TemplateSub,
 		}
 		executor = ReleaseTemplateExecutor{
 			r: render.New(render.Options{
@@ -75,8 +76,8 @@ func main() {
 	mux.GET("/forgot_password", template_handler.ServeHTTP)
 	mux.GET("/action_button", GetUserActionButton)
 	mux.GET("/progress", HttpRouterNeedAuth(GetMyVideos))
-	mux.GET("/browse", template_handler.ServeHTTP)
 	mux.GET("/videos", template_handler.ServeHTTP)
+	mux.GET("/feed/:amount/:page", HandleFeed)
 	mux.NotFound = http.StripPrefix("/", HttpNeedAuth(template_handler.ServeHTTP))
 
 	// Serve.
