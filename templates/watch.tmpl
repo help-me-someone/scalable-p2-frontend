@@ -9,7 +9,9 @@
 
         {{ if .PreviousVideo }}
         <!-- Button to previous video -->
-        <a class="absolute right-5 top-5 w-6 h-6 z-10 cursor-pointer" @click="window.location = '/watch/{{ .PreviousVideo.Username }}/{{ .PreviousVideo.Key }}/{{ sub .RankNumber 1 }}'">
+        <a class="absolute right-5 top-5 w-6 h-6 z-10 cursor-pointer" 
+        @click="window.location = '/watch/{{ .PreviousVideo.Username }}/{{ .PreviousVideo.Key }}/{{ sub .RankNumber 1 }}'"
+        >
         <svg class="w-full h-full text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V1m0 0L1 5m4-4 4 4"/>
           </svg>
@@ -19,7 +21,9 @@
         
         {{ if .NextVideo }}
         <!-- Button to next video -->
-        <a class="absolute right-5 bottom-5 w-6 h-6 z-10 cursor-pointer" @click="window.location = '/watch/{{ .NextVideo.Username }}/{{ .NextVideo.Key }}/{{ add .RankNumber 1 }}'">
+        <a class="absolute right-5 bottom-5 w-6 h-6 z-10 cursor-pointer"
+        @click="window.location = '/watch/{{ .NextVideo.Username }}/{{ .NextVideo.Key }}/{{ add .RankNumber 1 }}'"
+        >
           <svg class="w-full h-full text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1v12m0 0 4-4m-4 4L1 9"/>
           </svg>
@@ -38,6 +42,11 @@
           ></video-js>
           <!-- "core" version of Video.js -->
           <script>
+
+            if (player) {
+              player.dispose()
+            }
+
             // Global request callback defining beforeSend function, will affect every player.
             var player = videojs('vid1', {autoplay: 'play'});
             player.src({
