@@ -212,6 +212,7 @@ func GetUserActionButton(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 
 // TODO: Move this to the backend!!
 func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	log.Println("Calling GetMyVideos!!!")
 
 	username, ok := r.Context().Value("username").(string)
 	if !ok {
@@ -223,7 +224,8 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	resp, err := http.Get(fmt.Sprintf("http://db-svc:8083/user/%s/videos", username))
+	url := fmt.Sprintf("http://back-end:7000/users/%s/videos", username)
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -235,10 +237,12 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	defer resp.Body.Close()
 
+	log.Println("Request send to backend")
+
 	response := &struct {
-		Success bool          `json:"success"`
-		Message string        `json:"message"`
-		Videos  []video.Video `json:"videos"`
+		Success bool           `json:"success"`
+		Message string         `json:"message"`
+		Videos  []*video.Video `json:"videos"`
 	}{}
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
@@ -251,8 +255,10 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
+	log.Printf("Response: %+v\n", response)
+
 	type Entry struct {
-		Video        video.Video
+		Video        *video.Video
 		ThumbnailURL string
 	}
 	entries := make([]Entry, 0)
@@ -289,7 +295,8 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	executor.ExecuteTemplate(w, "video_progress", map[string]interface{}{
-		"Videos": entries,
+		"Videos":   entries,
+		"Username": username,
 	})
 }
 
@@ -352,5 +359,46 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		"PreviousVideo":   nextPrev["previous"],
 		"NextVideo":       nextPrev["next"],
 		"RankNumber":      rank,
+	})
+}
+
+func HandleEditPage(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	// Retrieve the url parameters
+	username := p.ByName("username")
+	videoKey := p.ByName("video") // This is the video key.
+	if len(username) == 0 || len(videoKey) == 0 {
+		log.Println("Something went terribly wrong.")
+		return
+	}
+
+	// Request for the video information.
+	url := fmt.Sprintf("http://back-end:7000/users/%s/videos/%s/info", username, videoKey)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println("Could not access!", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Decode the response.
+	response := &struct {
+		Success   bool
+		Message   string
+		Video     video.Video
+		Thumbnail string
+	}{}
+	err = json.NewDecoder(resp.Body).Decode(response)
+	if err != nil {
+		log.Println("Failed to decode response.")
+		return
+	}
+
+	executor.ExecuteTemplate(w, "watch", map[string]interface{}{
+		"Thumbnail":       response.Thumbnail,
+		"API_GATEWAY_URL": API_GATEWAY_URL,
+		"Username":        username,
+		"Video":           response.Video,
+		"VideoKey":        videoKey,
+		"VideoName":       response.Video.Name,
 	})
 }

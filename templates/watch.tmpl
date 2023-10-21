@@ -1,6 +1,12 @@
+
+{{ $returnUrl := "/home" }}
+{{ if (eq .RankNumber -2) }}
+{{ $returnUrl = "/progress" }}
+{{ end }}
+
 <section class="flex overflow-hidden" x-data>
   <div class="w-[73%] relative">
-        <a class="absolute left-5 top-5 w-6 h-6 z-10 cursor-pointer" @click="window.location = '/home'">
+        <a class="absolute left-5 top-5 w-6 h-6 z-10 cursor-pointer" href="{{ $returnUrl }}">
           <svg class="w-full h-full text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
           </svg>
@@ -30,41 +36,9 @@
         </a>
         {{ end }}
 
-        
+
         <div class="flex h-full items-center justify-center justify-items-center z-0">
-          <video-js 
-          id=vid1 
-          class="vjs-default-skin" 
-          loop="true"
-          preload="auto"
-          poster="{{ .Thumbnail }}"
-          controls
-          ></video-js>
-          <!-- "core" version of Video.js -->
-          <script>
-
-            if (player) {
-              player.dispose()
-            }
-
-            // Global request callback defining beforeSend function, will affect every player.
-            var player = videojs('vid1', {autoplay: 'play'});
-            player.src({
-              src: 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .VideoKey }}',
-              type: 'application/x-mpegURL',
-            });
-
-            /**
-             * add manifest authorization header
-             */
-            window.xhook.before((request, callback) => {
-              // only set header request for the videojs src url (don't touch other xhr requests)
-              if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .VideoKey }}') {
-                request.xhr.setRequestHeader('X-Custom-Header', document.cookie);
-              }
-              callback();
-            });
-          </script>
+          {{ template "components/video" (map "API_GATEWAY_URL" .API_GATEWAY_URL "Username" .Username "Thumbnail" .Thumbnail "VideoKey" .VideoKey ) }}
         </div>
   </div>
 

@@ -1,0 +1,35 @@
+<div class="flex h-full items-center justify-center justify-items-center z-0">
+  <video-js 
+  id=vid1 
+  class="vjs-default-skin" 
+  loop="true"
+  preload="auto"
+  poster="{{ .Thumbnail }}"
+  controls
+  ></video-js>
+  <!-- "core" version of Video.js -->
+  <script>
+
+    if (player) {
+      player.dispose()
+    }
+
+    // Global request callback defining beforeSend function, will affect every player.
+    var player = videojs('vid1', {autoplay: 'play'});
+    player.src({
+      src: 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .VideoKey }}',
+      type: 'application/x-mpegURL',
+    });
+
+    /**
+     * add manifest authorization header
+     */
+    window.xhook.before((request, callback) => {
+      // only set header request for the videojs src url (don't touch other xhr requests)
+      if (request.url === 'http://{{ .API_GATEWAY_URL }}/api/users/{{ .Username }}/videos/{{ .VideoKey }}') {
+        request.xhr.setRequestHeader('X-Custom-Header', document.cookie);
+      }
+      callback();
+    });
+  </script>
+</div>

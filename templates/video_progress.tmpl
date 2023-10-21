@@ -1,20 +1,28 @@
 {{ define "navbar-video_progress" }}
 {{ template "components/navbar" (map "Name" "AUTH_URL" "Value" .API_GATEWAY_URL) }}
 {{ end }}
+
+
+{{ $name := .Username }}
   <!-- ... -->
 
-<div class="grid grid-cols-4 gap-4">
+<div class="grid grid-cols-4 pt-4 px-4 gap-4">
    {{range .Videos}}
-   <div>
+   <div class="max-w-sm w-full h-64 lg:max-w-full lg:flex relative">
       <a 
-      href="#" 
-      class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+      @click="window.location = '/watch/{{ $name }}/{{ .Video.Key }}/-2'"
+      class="object-cover w-full flex flex-row items-center rounded-lg md:flex-row md:max-w-xl bg-surface-0 hover:bg-surface-1"
       >
-       <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-l-lg" src="{{ .ThumbnailURL }}" alt="">
-       <div class="flex flex-col justify-between p-4 leading-normal">
-           <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ .Video.Name }}</h5>
-           <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Status: {{ .Video.Status}}</p>
-       </div>
+
+        <div class="w-[40%] h-full rounded-t-lg md:rounded-none md:rounded-l-lg">
+          <img class="object-cover w-full h-full rounded-t-lg md:rounded-none md:rounded-l-lg" src="{{ .ThumbnailURL }}" loading="lazy">
+        </div>
+
+        <div class="flex flex-col justify-between p-4 leading-normal w-[60%]">
+            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ .Video.Name }}</h5>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ .Video.Views }} views</p>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ .Video.Status }}</p>
+        </div>
       </a>
    </div>
    {{end}}

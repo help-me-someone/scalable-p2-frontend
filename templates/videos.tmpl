@@ -1,7 +1,7 @@
 {{ $end := 15 }}
 {{ $i := 0 }}
 {{ $PageNumber := .Page }}
-<div class="grid lg:grid-cols-4 gap-4 pt-4 px-16" x-data>
+<div class="grid lg:grid-cols-4 gap-4 pt-4 px-4" x-data>
 
 {{ range $Index, $Entry := .Entries }}
   <div class="max-w-sm w-full h-64 lg:max-w-full lg:flex relative"
@@ -23,7 +23,6 @@
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $Entry.Video.Name }}</h5>
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Username }}</p>
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Views }} views</p>
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ add $Index $PageNumber }}</p>
         </div>
 
     </a>
