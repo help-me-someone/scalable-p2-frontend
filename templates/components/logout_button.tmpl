@@ -1,4 +1,4 @@
-<li class="flex justify-center">
+<li class="flex justify-center z-10">
     <div
         x-data="{
             open: false,
@@ -22,7 +22,7 @@
         x-on:keydown.escape.prevent.stop="close($refs.button)"
         x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
         x-id="['dropdown-button']"
-        class="relative block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+        class="z-10 relative block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
         >
         <!-- Button -->
         <button
@@ -31,7 +31,7 @@
             :aria-expanded="open"
             :aria-controls="$id('dropdown-button')"
             type="button"
-            class="flex items-center"
+            class="z-10 flex items-center"
         >
             {{ .username }}
 
@@ -49,12 +49,12 @@
             x-on:click.outside="close($refs.button)"
             :id="$id('dropdown-button')"
             style="display: none;"
-            class="absolute left-0 mt-2 w-40 rounded-md bg-white shadow-md"
+            class="z-10 absolute left-0 mt-2 w-40 rounded-md bg-white shadow-md"
         >
-            <a href="/progress" class="flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-base text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
+            <a href="/progress" class="z-10 flex items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-base text-left text-sm hover:bg-gray-50 disabled:text-gray-500">
                 My videos
             </a>
-            <a class="flex cursor-pointer items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500"
+            <a class="z-10 flex cursor-pointer items-center gap-2 w-full first-of-type:rounded-t-md last-of-type:rounded-b-md px-4 py-2.5 text-left text-sm hover:bg-gray-50 disabled:text-gray-500"
             @click="
               fetch('http://{{.API_GATEWAY_URL}}/auth/logout', 
                     {
