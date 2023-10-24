@@ -655,16 +655,16 @@ video {
   height: 16rem;
 }
 
-.h-96 {
-  height: 24rem;
-}
-
 .h-full {
   height: 100%;
 }
 
 .h-screen {
   height: 100vh;
+}
+
+.max-h-screen {
+  max-height: 100vh;
 }
 
 .w-40 {
@@ -846,11 +846,6 @@ video {
 
 .p-6 {
   padding: 1.5rem;
-}
-
-.px-16 {
-  padding-left: 4rem;
-  padding-right: 4rem;
 }
 
 .px-4 {
@@ -1161,16 +1156,8 @@ img {
     display: block;
   }
 
-  .md\:h-auto {
-    height: auto;
-  }
-
   .md\:h-screen {
     height: 100vh;
-  }
-
-  .md\:w-48 {
-    width: 12rem;
   }
 
   .md\:w-auto {

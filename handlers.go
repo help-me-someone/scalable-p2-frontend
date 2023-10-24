@@ -210,10 +210,7 @@ func GetUserActionButton(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	}
 }
 
-// TODO: Move this to the backend!!
 func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	log.Println("Calling GetMyVideos!!!")
-
 	username, ok := r.Context().Value("username").(string)
 	if !ok {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -312,7 +309,7 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	}
 
 	// Request for the video information.
-	url := fmt.Sprintf("http://back-end:7000/users/%s/videos/%s/info", username, videoKey)
+	url := fmt.Sprintf("http://back-end:7000/watch/%s/%s/info", username, videoKey)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Could not access!", err)

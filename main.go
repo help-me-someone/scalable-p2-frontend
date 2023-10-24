@@ -78,7 +78,7 @@ func main() {
 	mux.GET("/action_button", GetUserActionButton)
 	mux.GET("/progress", HttpRouterNeedAuth(GetMyVideos))
 	mux.GET("/videos", template_handler.ServeHTTP)
-	mux.GET("/watch/:username/:video/:rank", HandleWatchPage)
+	mux.GET("/watch/:username/:video/:rank", HttpRouterNeedAuth(HandleWatchPage))
 	mux.GET("/edit/:username/:video", HandleEditPage)
 	mux.GET("/feed/:amount/:page", HandleFeed)
 	mux.NotFound = http.StripPrefix("/", HttpNeedAuth(template_handler.ServeHTTP))
