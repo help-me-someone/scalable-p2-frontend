@@ -103,8 +103,10 @@ func HandleFeed(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	}
 	// Retrieve the videos.
 	url := fmt.Sprintf("http://%s/api/video/feed/%s/%s", API_GATEWAY_URL, amount, page)
+	log.Println("Fetching from:", url)
 	resp, err := http.Get(url)
 	if err != nil {
+		log.Println(err)
 		log.Println("Failed to request from the backend.")
 		return
 	}
