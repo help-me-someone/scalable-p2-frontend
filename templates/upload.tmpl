@@ -59,6 +59,7 @@ async function wasClicked(fileName) {
   try {
     console.log("Sending: ", document.cookie)
     const response = await fetch('http://{{ .API_GATEWAY_URL }}/api/upload', {
+      method: 'GET',
       mode: 'cors',
       credentials: 'include',
       headers: {
