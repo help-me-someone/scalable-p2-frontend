@@ -24,10 +24,18 @@ const template_path = "templates/*.tmpl"
 
 var executor TemplateExecutor
 
-var API_GATEWAY_URL string
+var (
+	API_GATEWAY_URL string
+)
+
+func loadEnvs() {
+	API_GATEWAY_URL = os.Getenv("API_GATEWAY_URL")
+}
 
 func main() {
-	API_GATEWAY_URL = os.Getenv("API_GATEWAY_URL")
+	// Load environment variables.
+	loadEnvs()
+
 	log.Println("API_GATEWAY_URL:", API_GATEWAY_URL)
 
 	// Create templates.
