@@ -26,10 +26,12 @@ var executor TemplateExecutor
 
 var (
 	API_GATEWAY_URL string
+	BACKEND_URL     string
 )
 
 func loadEnvs() {
 	API_GATEWAY_URL = os.Getenv("API_GATEWAY_URL")
+	BACKEND_URL = os.Getenv("BACKEND_URL")
 }
 
 func main() {

@@ -102,7 +102,7 @@ func HandleFeed(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 	// Retrieve the videos.
-	url := fmt.Sprintf("http://%s/api/video/feed/%s/%s", API_GATEWAY_URL, amount, page)
+	url := fmt.Sprintf("http://%s/video/feed/%s/%s", BACKEND_URL, amount, page)
 	log.Println("Fetching from:", url)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -153,7 +153,7 @@ func GetVideoFromRank(rank int) (*video.VideoWithUserEntry, error) {
 	res := &ResponsePayload{}
 
 	// Perform the request.
-	url := fmt.Sprintf("http://%s/api/video/rank/%d", API_GATEWAY_URL, rank-1)
+	url := fmt.Sprintf("http://%s/video/rank/%d", BACKEND_URL, rank-1)
 	resp, err := http.Get(url)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		log.Println("Failed to request from the backend.")
@@ -223,7 +223,7 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	url := fmt.Sprintf("http://%s/api/users/%s/videos", API_GATEWAY_URL, username)
+	url := fmt.Sprintf("http://%s/users/%s/videos", BACKEND_URL, username)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println(err)
@@ -263,7 +263,7 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	entries := make([]Entry, 0)
 
 	for _, v := range response.Videos {
-		url := fmt.Sprintf("http://%s/api/users/%s/videos/%s/info", API_GATEWAY_URL, username, v.Key)
+		url := fmt.Sprintf("http://%s/users/%s/videos/%s/info", BACKEND_URL, username, v.Key)
 		log.Println("Accessing:", url)
 		resp, err := http.Get(url)
 		if err != nil {
@@ -311,7 +311,7 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	}
 
 	// Request for the video information.
-	url := fmt.Sprintf("http://%s/api/watch/%s/%s/info", API_GATEWAY_URL, username, videoKey)
+	url := fmt.Sprintf("http://%s/watch/%s/%s/info", BACKEND_URL, username, videoKey)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Could not access!", err)
@@ -371,7 +371,7 @@ func HandleEditPage(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	}
 
 	// Request for the video information.
-	url := fmt.Sprintf("http://%s/api/users/%s/videos/%s/info", API_GATEWAY_URL, username, videoKey)
+	url := fmt.Sprintf("http://%s/users/%s/videos/%s/info", BACKEND_URL, username, videoKey)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Could not access!", err)
