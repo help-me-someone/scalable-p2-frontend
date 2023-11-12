@@ -48,7 +48,51 @@
       <p class="text-lg text-text-base">{{ .VideoName }}</p>
       <p class="text-sm text-text-base">By {{ .Username }}</p> 
       <p class="text-sm text-text-base" id="view"></p>
+      <div 
+      	x-data="likeCounter()"
+      	class="flex h-screen"
+      >
+      		<button 
+            class="inline-block flex flex-row h-9 w-20 align-middle border-2 rounded-lg items-center"
+    				type="button"
+    				class="cursor-pointer align-middle"
+    				@click="likeCounterHandler()"
+          >
+      			<div>
+      				<!-- Like icon -->
+      				<svg 
+      					xmlns="http://www.w3.org/2000/svg" 
+      					class="h-6 w-6 ml-1"
+      					x-show="!isLiked"
+      					fill="none" 
+      					viewBox="0 0 24 24" 
+      					stroke="currentColor"
+      				>
+      					  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      				</svg>
+			
+      				<!-- Unlike icon -->
+      				<svg 
+      					xmlns="http://www.w3.org/2000/svg" 
+      					class="h-6 w-6 ml-1"
+      					x-show="isLiked"
+      					fill="currentColor" 
+      					viewBox="0 0 20 20"
+      					stroke="currentColor"
+      			  >
+      					  <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+      				</svg>
+      			</div>
+		
+      			<!-- Like count -->
+      			<span 
+      				x-text="likeCount"
+      				class="w-full text-lg text-center"
+      			></span>
+      		</div>
+      </button>
     </div>
+
   </div>
 </section>
 
@@ -68,4 +112,17 @@
   function fetchViews(socket) {
     socket.emit('getNewViewCount', { video:'{{ .VideoKey }}' });
   }
+</script>
+
+<script>
+	const likeCounter = () => {
+		return {
+			likeCount: 0, 
+			isLiked: false,
+			likeCounterHandler() {
+				this.isLiked = !this.isLiked;
+				this.isLiked ? this.likeCount++ : this.likeCount--;
+			}
+		}
+	}
 </script>

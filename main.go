@@ -43,6 +43,8 @@ func main() {
 	// Create templates.
 	if debug {
 		executor = DebugTemplateExecutor{template_path}
+		API_GATEWAY_URL = "toktik.localhost"
+		BACKEND_URL = "localhost:7000"
 	} else {
 		funcs := map[string]any{
 			"map":  TemplateMap,
