@@ -22,10 +22,19 @@
         <div class="flex flex-col justify-between p-4 leading-normal w-[60%]">
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $Entry.Video.Name }}</h5>
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Username }}</p>
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Views }} views</p>
+            <p id="{{ $Entry.Video.Key }}-views" class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Views }} views</p>
         </div>
 
     </a>
   </div>
+  <script>
+    // Join the room for the video.
+    socket.emit('video', { video:'{{ $Entry.Video.Key }}' });
+
+    // Poll for the video every 10 seconds.
+    setInterval(() => {
+      socket.emit('getNewViewCount', { video:'{{ $Entry.Video.Key }}' });
+    }, 10000);
+  </script>
   {{- end}}
 </div>

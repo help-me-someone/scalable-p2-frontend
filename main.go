@@ -84,6 +84,7 @@ func main() {
 	mux.GET("/login", template_handler.ServeHTTP)
 	mux.GET("/signup", template_handler.ServeHTTP)
 	mux.GET("/home", template_handler.ServeHTTP)
+	mux.GET("/socket", template_handler.ServeHTTP)
 	mux.GET("/forgot_password", template_handler.ServeHTTP)
 	mux.GET("/action_button", GetUserActionButton)
 	mux.GET("/progress", HttpRouterNeedAuth(GetMyVideos))

@@ -47,8 +47,25 @@
     <div class="mx-4 my-4 flex flex-col">
       <p class="text-lg text-text-base">{{ .VideoName }}</p>
       <p class="text-sm text-text-base">By {{ .Username }}</p> 
-      <p class="text-sm text-text-base">{{ .Video.Views }} views</p>
+      <p class="text-sm text-text-base" id="view"></p>
     </div>
   </div>
 </section>
 
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script><script>
+  var socket = io.connect('ws://localhost:5001', { transports: ['websocket'] });
+
+  // Join the room for the video.
+  socket.emit('video', { video:'{{ .VideoKey }}' });
+
+  // Subscribe to update event, so we can update the count of the views.
+  socket.on('update', info => {
+    document.getElementById("view").innerHTML = info.value;
+  });
+
+  // Poll for view.
+  setInterval(() => {fetchViews(socket)}, 5000);
+  function fetchViews(socket) {
+    socket.emit('getNewViewCount', { video:'{{ .VideoKey }}' });
+  }
+</script>
