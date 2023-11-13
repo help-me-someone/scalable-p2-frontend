@@ -312,7 +312,13 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 
 	// Request for the video information.
 	url := fmt.Sprintf("http://%s/watch/%s/%s/info", BACKEND_URL, username, videoKey)
-	resp, err := http.Get(url)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("X-Username", r.Context().Value("username").(string))
+
+	fmt.Println("Setting X-Username", r.Context().Value("username").(string))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Could not access!", err)
 		return
@@ -334,12 +340,18 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		Message   string
 		Video     video.Video
 		Thumbnail string
+		LikeCount int64 `json:"like_count"`
+		UserID    uint  `json:"uid"`
+		Liked     bool  `json:"liked"`
 	}{}
 	err = json.NewDecoder(resp.Body).Decode(response)
 	if err != nil {
 		log.Println("Failed to decode response.")
 		return
 	}
+
+	fmt.Println("User:", response.UserID, "liked:", response.Liked)
+	fmt.Println("Liked count", response.LikeCount)
 
 	if v, ok := nextPrev["previous"]; ok && v != nil {
 		log.Println("Previous Video: ", v.Name)
@@ -358,6 +370,10 @@ func HandleWatchPage(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		"PreviousVideo":   nextPrev["previous"],
 		"NextVideo":       nextPrev["next"],
 		"RankNumber":      rank,
+		"LikedCount":      response.LikeCount,
+		"UserID":          response.UserID,
+		"VideoID":         response.Video.ID,
+		"Liked":           response.Liked,
 	})
 }
 

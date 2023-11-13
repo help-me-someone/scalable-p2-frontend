@@ -6,7 +6,7 @@
 
 <section class="flex max-h-screen h-screen overflow-hidden" x-data>
   <div class="w-[73%] h-screen max-h-screen relative">
-        <a class="absolute left-5 top-5 w-6 h-6 z-10 cursor-pointer" href="{{ $returnUrl }}">
+        <a class="absolute left-5 top-5 w-6 h-6 z-10 cursor-pointer" @click="window.location = '{{$returnUrl}}'">
           <svg class="w-full h-full text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
           </svg>
@@ -88,7 +88,9 @@
       			<span 
       				x-text="likeCount"
       				class="w-full text-lg text-center"
+              id="likes"
       			></span>
+
       		</div>
       </button>
     </div>
@@ -107,22 +109,50 @@
     document.getElementById("view").innerHTML = info.value;
   });
 
+
   // Poll for view.
   setInterval(() => {fetchViews(socket)}, 5000);
   function fetchViews(socket) {
     socket.emit('getNewViewCount', { video:'{{ .VideoKey }}' });
+    socket.emit('getNewLikeCount', { videoKey:'{{ .VideoKey }}', videoID:'{{ .VideoID }}', userID:'{{ .UserID }}' });
   }
-</script>
 
-<script>
+  // NOTE: The logic for the db should be put into the websocket server.
+  // TODO: Subscribe to update like event, so we can make it eventually consistent.
+
+  // Check whether the video is liked by the user or not.
+  // If entry DNE || !like --> false.
+  // If exist && like      --> true.
+
+  // Request for the video like info.
+  socket.emit('getNewLikeCount', { 
+    videoKey:'{{ .VideoKey }}', 
+    videoID:'{{ .VideoID }}', 
+    userID:'{{ .UserID }}' 
+  });
+
+  var like = {{ .Liked }};
+  var likedCount = {{ .LikedCount }};
+
+  // This is for alpinejs.
 	const likeCounter = () => {
 		return {
-			likeCount: 0, 
-			isLiked: false,
+			likeCount: likedCount, 
+			isLiked: like,
 			likeCounterHandler() {
 				this.isLiked = !this.isLiked;
+
+        socket.emit('videoLikeToggle', { videoKey:'{{ .VideoKey }}', videoID:'{{ .VideoID }}', userID:'{{ .UserID }}', isLike:this.isLiked });
+
+        // TODO: Remove me later.
 				this.isLiked ? this.likeCount++ : this.likeCount--;
-			}
+			},
+      init() {
+        socket.on("like", info => {
+          console.log("New like value: ", info.value);
+          this.likeCount = info.value;
+        });
+      }
 		}
 	}
 </script>
