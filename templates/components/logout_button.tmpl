@@ -76,43 +76,4 @@
     </div>
 </li>
 
-<!-- Notification Button -->
-<li>
-    <button>
-      <strong class="relative inline-flex items-center rounded text-xs font-medium">
-        <span class="hidden absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red flex justify-center items-center items"
-         id="notif-container"
-        ><span id="notif-count"></span></span>
-        <svg class="w-6 h-6 text-white hover:text-blue-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 21">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3.464V1.1m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175C15 15.4 15 16 14.462 16H1.538C1 16 1 15.4 1 14.807c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 8 3.464ZM4.54 16a3.48 3.48 0 0 0 6.92 0H4.54Z"/>
-        </svg>
-      </strong>
-    </button>
-</li>
-
-<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
-
-<script>
-    var socket = io.connect('ws://localhost:5001', { transports: ['websocket'] });
-
-    // Subscribe to the user's own room.
-    socket.emit("join", { room: '{{ .username }}' });
-
-    // Request for the notification count.
-    socket.emit("getNotifications", { username: '{{ .username }}' });
-
-    const notifCountContainer = document.getElementById("notif-container");
-
-    // Handle when the websocket sends back notifications.
-    socket.on("updateNotifications", (info) => {
-        console.log("Updating notification count: ", info.count);
-        document.getElementById("notif-count").innerHTML = info.count;
-        
-        if (info.count > 0) {
-            notifCountContainer.style.display = "block";
-        } else {
-            notifCountContainer.style.display = "none";
-        }
-    })
-</script>
-
+{{ template "components/notification" (map "username" .username) }}
