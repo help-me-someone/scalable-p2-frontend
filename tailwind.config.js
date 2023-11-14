@@ -10,6 +10,7 @@ module.exports = {
         'surface-1': '#45475a',
         'surface-0': '#313244',
         'lavender': '#b4befe',
+        'red': '#f84f31',
       },
     },
   },
