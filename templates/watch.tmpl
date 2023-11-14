@@ -108,7 +108,7 @@
                     class="px-0 w-full h-8 text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400 bg-surface-0"
                     placeholder="Write a comment..." required></textarea>
             </div>
-            <button id="post-comment" type="submit" @click="submitNewComment(); document.getElementById('post-comment').innerHTML='Post comment'; document.getElementById('comment').value=''" hx-post="http://{{.API_GATEWAY_URL}}/api/comment" hx-request='"credentials":true' hx-vals="js:{comment: getComment(), user_id: getUserID(), video_id: getVideoID()}"
+            <button id="post-comment" type="submit" hx-post="http://{{.API_GATEWAY_URL}}/api/comment" hx-request='"credentials":true' hx-swap="none" hx-vals="js:{comment: comment, user_id: getUserID(), video_id: getVideoID()}"
                 class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-surface-0 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-surface-2">
                 Post comment
             </button>
@@ -211,14 +211,30 @@
     }
   });
 
+  var comment = '';
+
   const submitNewComment = () => {
+    comment = getComment();
+
+    // Empty comment.
+    if (comment == '') {
+      return;
+    }
+
+    console.log("Running submitNewComment!");
     socket.emit("newComment", {
-      comment: getComment(),
+      comment: comment,
       date: new Date(), // The current time.
       user_id: getUserID(),
       video_id: getVideoID(),
       room: '{{ .VideoKey }}room',
     });
+
+    // Clear the input form.
+    document.getElementById('comment').value='';
   }
+
+  const postCommentButton = document.getElementById("post-comment");
+  postCommentButton.addEventListener("click", submitNewComment);
 
 </script>
