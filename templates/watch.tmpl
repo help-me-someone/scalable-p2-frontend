@@ -43,14 +43,14 @@
   </div>
 
   <!-- Side bar -->
-  <div class="w-[27%] h-screen bg-surface-0">
-    <div class="mx-4 my-4 flex flex-col">
+  <div class="w-[27%] flex h-screen bg-surface-0 flex-col">
+    <div class="mx-4 mt-4 flex flex-col">
       <p class="text-lg text-text-base">{{ .VideoName }}</p>
       <p class="text-sm text-text-base">By {{ .Username }}</p> 
       <p class="text-sm text-text-base" id="view"></p>
       <div 
       	x-data="likeCounter()"
-      	class="flex h-screen"
+      	class="flex"
       >
       		<button 
             class="inline-block flex flex-row h-9 w-20 align-middle border-2 rounded-lg items-center"
@@ -95,6 +95,38 @@
       </button>
     </div>
 
+    <!-- Comment Section -->
+    <div class="flex h-full mt-4 mx-4 w-full overflow-auto rounded-t-lg bg-surface-1">
+      <div class="max-w-2xl mx-auto w-full px-4 mb-3">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">Discussion</h2>
+          </div>
+        <form class="mb-6">
+            <div class="py-2 rounded-lg rounded-t-lg px-4 mb-4 bg-surface-0">
+                <label for="comment" class="sr-only">Your comment</label>
+                <textarea id="comment" rows="6"
+                    class="px-0 w-full h-8 text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400 bg-surface-0"
+                    placeholder="Write a comment..." required></textarea>
+            </div>
+            <button type="submit" @click="submitNewComment()" hx-post="http://{{.API_GATEWAY_URL}}/api/comment" hx-request='"credentials":true' hx-vals="js:{comment: getComment(), user_id: getUserID(), video_id: getVideoID()}"
+                class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-surface-0 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-surface-2">
+                Post comment
+            </button>
+        </form>
+
+        <!-- Separate -->
+        <hr class="h-px my-4 border-1">
+
+        <div id="comment-section" class="w-full h-auto space-y-3">
+        </div>
+
+        <div class="h-3 w-full"></div>
+
+      </div>
+    </div>
+    <!-- /Comment Section -->
+
+
   </div>
 </section>
 
@@ -109,7 +141,6 @@
     document.getElementById("view").innerHTML = info.value;
   });
 
-
   // Poll for view.
   setInterval(() => {fetchViews(socket)}, 5000);
   function fetchViews(socket) {
@@ -117,18 +148,17 @@
     socket.emit('getNewLikeCount', { videoKey:'{{ .VideoKey }}', videoID:'{{ .VideoID }}', userID:'{{ .UserID }}' });
   }
 
-  // NOTE: The logic for the db should be put into the websocket server.
-  // TODO: Subscribe to update like event, so we can make it eventually consistent.
-
-  // Check whether the video is liked by the user or not.
-  // If entry DNE || !like --> false.
-  // If exist && like      --> true.
-
   // Request for the video like info.
   socket.emit('getNewLikeCount', { 
     videoKey:'{{ .VideoKey }}', 
     videoID:'{{ .VideoID }}', 
     userID:'{{ .UserID }}' 
+  });
+
+  // Request for the video comments.
+  socket.emit('getVideoComments', { 
+    videoKey:'{{ .VideoKey }}',  // For the room.
+    videoID:'{{ .VideoID }}', 
   });
 
   var like = {{ .Liked }};
@@ -155,4 +185,40 @@
       }
 		}
 	}
+
+  const getComment = () => {
+    return document.getElementById("comment").value;
+  }
+
+  const getUserID = () => {
+    return '{{ .UserID }}';
+  }
+
+  const getVideoID = () => {
+    return '{{ .VideoID }}';
+  }
+
+  const generateComment = (info) => {
+    return '<article class="p-3 w-full text-base rounded-lg bg-surface-0"> <footer class="flex justify-between items-center mb-1"> <div class="flex items-center"> <p class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">' + info.user + '</p><p class="text-sm text-gray-600 dark:text-gray-400"><time pubdate datetime="2022-02-08" title="February 8th, 2022">' + info.date + '</time></p> </div> </footer> <p class="text-gray-500 dark:text-gray-400">' + info.comment + '</p></article>'
+  };
+
+  socket.on('comment', info => {
+    console.log(info.value);
+
+    const commentSection = document.getElementById("comment-section");
+    for (const comment of JSON.parse(info.value)) {
+      commentSection.insertAdjacentHTML("afterbegin", generateComment(comment));
+    }
+  });
+
+  const submitNewComment = () => {
+    socket.emit("newComment", {
+      comment: getComment(),
+      date: new Date(), // The current time.
+      user_id: getUserID(),
+      video_id: getVideoID(),
+      room: '{{ .VideoKey }}room',
+    });
+  }
+
 </script>
