@@ -259,6 +259,7 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	type Entry struct {
 		Video        *video.Video
 		ThumbnailURL string
+		VideoID      uint
 	}
 	entries := make([]Entry, 0)
 
@@ -290,6 +291,7 @@ func GetMyVideos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		entries = append(entries, Entry{
 			Video:        v,
 			ThumbnailURL: response.Thumbnail,
+			VideoID:      v.ID,
 		})
 	}
 

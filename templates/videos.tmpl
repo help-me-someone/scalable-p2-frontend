@@ -23,6 +23,7 @@
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $Entry.Video.Name }}</h5>
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Username }}</p>
             <p id="{{ $Entry.Video.Key }}-views" class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ $Entry.Video.Views }} views</p>
+            <p id="{{ $Entry.Video.Key }}-likes" class="mb-3 font-normal text-gray-700 dark:text-gray-400">0 likes</p>
         </div>
 
     </a>
@@ -31,9 +32,23 @@
     // Join the room for the video.
     socket.emit('video', { video:'{{ $Entry.Video.Key }}' });
 
+    // For updating views.
+    socket.on('update', (info) => {
+      document.getElementById(info.room + "-views").innerHTML = `${info.value} views`;
+    });
+
+    socket.on('like', (info) => {
+      document.getElementById(info.key + "-likes").innerHTML = `${info.value} likes`;
+    });
+
+    // Initial call.
+    socket.emit('getNewLikeCount', { videoKey:'{{ $Entry.Video.Key }}', videoID:'{{ $Entry.Video.VideoID }}' });
+
     // Poll for the video every 10 seconds.
     setInterval(() => {
+      console.log("Updating video values...");
       socket.emit('getNewViewCount', { video:'{{ $Entry.Video.Key }}' });
+      socket.emit('getNewLikeCount', { videoKey:'{{ $Entry.Video.Key }}', videoID:'{{ $Entry.Video.VideoID }}' });
     }, 10000);
   </script>
   {{- end}}
