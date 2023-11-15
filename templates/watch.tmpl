@@ -223,10 +223,11 @@
       return;
     }
 
-    console.log("Running submitNewComment!");
+    const currentDate = new Date();
+
     socket.emit("newComment", {
       comment: comment,
-      date: new Date(), // The current time.
+      date: currentDate, // The current time.
       user_id: getUserID(),
       video_id: getVideoID(),
       room: '{{ .VideoKey }}room',
@@ -234,6 +235,18 @@
 
     // Clear the input form.
     document.getElementById('comment').value='';
+
+    setTimeout(function() {
+      socket.emit("pushNotification", {
+        owner_username: "{{ .Username }}",
+        videoname: "{{ .VideoName }}",
+        video_key: "{{ .VideoKey }}",
+        vid: "{{ .VideoID }}",
+        uid: "{{ .UserID }}",
+        type: "comment",
+        date: currentDate,
+      });
+    },2000); // delay for two second. 
   }
 
   const postCommentButton = document.getElementById("post-comment");

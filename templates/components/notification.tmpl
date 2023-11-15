@@ -1,0 +1,127 @@
+<!-- Notification Button -->
+<li>
+  <div class="flex justify-center">
+      <div
+          x-data="{
+              open: false,
+              toggle() {
+                  if (this.open) {
+                      return this.close()
+                  }
+
+                  this.$refs.button.focus()
+
+                  this.open = true
+              },
+              close(focusAfter) {
+                  if (! this.open) return
+
+                  this.open = false
+
+                  focusAfter && focusAfter.focus()
+              }
+          }"
+          x-on:keydown.escape.prevent.stop="close($refs.button)"
+          x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+          class="relative"
+      >
+          <!-- Button -->
+          <button
+              x-ref="button"
+              x-on:click="toggle()"
+              :aria-expanded="open"
+              aria-controls="notifs-button"
+              type="button"
+              class="flex items-center gap-2"
+          >
+            <strong class="relative inline-flex items-center rounded text-xs font-medium">
+              <span class="hidden absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red flex justify-center items-center items"
+               id="notif-container"
+              ><span id="notif-count"></span></span>
+              <svg class="w-6 h-6 text-white hover:text-blue-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 21">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3.464V1.1m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175C15 15.4 15 16 14.462 16H1.538C1 16 1 15.4 1 14.807c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 8 3.464ZM4.54 16a3.48 3.48 0 0 0 6.92 0H4.54Z"/>
+              </svg>
+            </strong>
+          </button>
+
+          <!-- Panel -->
+          <div
+              x-ref="panel"
+              x-show="open"
+              x-transition.origin.top.left
+              x-on:click.outside="close($refs.button)"
+              id="notifs-button"
+              style="display: none;"
+              class="absolute right-[20%] mt-2 w-96 rounded-md bg-surface-2 shadow-md"
+          >
+              <p id="notifs-header" class="flex border-b-2 text-center items-center gap-2 w-full first-of-type:rounded-t-md px-4 py-2.5 text-sm">
+                  Notifications
+              </p>
+          </div>
+      </div>
+  </div>
+</li>
+
+<!-- Functions related to forming notifications -->
+<script>
+  const notificationList = document.getElementById("notifs-header");
+  // Input
+  // - info -> { 
+  //  videoname -> The video name the notifaction is from.
+  //  videokey  -> The video key the notifaction is from.
+  //  actorname -> The user who performed some action. (Causing the notification)
+  //  message   -> String describing what the user did.
+  // }
+  function CreateNotificationEntry(info) {
+    const bgColor = "bg-surface-0";
+    const alertIcon = (!info.read) ? `<svg id="notif-icon-${info.id}" class="w-4 h-4 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+    </svg>` : "<div class='mr-4'></div>";
+
+    const clickAction = `@click="handleNotification({id: '${info.id}', link: 'watch/${info.videoOwner}/${info.videoKey}/0'})"`
+    const res = `
+        <a ${clickAction} class="flex hover:bg-surface-2 ${bgColor} text-center items-center gap-2 w-full px-2 py-2.5 text-sm">
+            ${alertIcon}
+          ${info.message}
+        </a>
+    `
+
+    notificationList.insertAdjacentHTML("afterend", res);
+  }
+</script>
+
+<script>
+  var socket = io.connect('ws://localhost:5001', { transports: ['websocket'] });
+
+  console.log("Username: ", '{{ .username }}')
+
+  // Subscribe to the user's own room.
+  socket.emit("join", { room: '{{ .username }}' });
+
+  // Request for the notification count.
+  socket.emit("getNotifications", { username: '{{ .username }}' });
+
+  const notifCountContainer = document.getElementById("notif-container");
+
+  var currentNotifCount = 0;
+  // Handle when the websocket sends back notifications.
+  socket.on("updateNotifications", (info) => {
+      document.getElementById("notif-count").innerHTML = currentNotifCount + info.count;
+      currentNotifCount = info.count;
+      notifCountContainer.style.display = (info.count > 0) ? "block" : "none";
+
+      console.log(info.notifications);
+      info.notifications.forEach((info) => {
+        CreateNotificationEntry(info);
+      });
+  })
+
+  // Input
+  // - info -> { id, link }
+  function handleNotification(info) {
+    socket.emit("readNotification", info);
+    window.location = info.link;
+  }
+
+</script>
+
