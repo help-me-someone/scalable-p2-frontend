@@ -30,7 +30,7 @@
   </div>
   <script>
     // Join the room for the video.
-    socket.emit('video', { video:'{{ $Entry.Video.Key }}' });
+    // socket.emit('video', { video:'{{ $Entry.Video.Key }}' });
 
     // For updating views.
     socket.on('update', (info) => {
@@ -42,13 +42,14 @@
     });
 
     // Initial call.
-    socket.emit('getNewLikeCount', { videoKey:'{{ $Entry.Video.Key }}', videoID:'{{ $Entry.Video.VideoID }}' });
+    socket.emit('getNewViewCount', { to:'user', video:'{{ $Entry.Video.Key }}' });
+    socket.emit('getNewLikeCount', { to:'user', videoKey:'{{ $Entry.Video.Key }}', videoID:'{{ $Entry.Video.VideoID }}' });
 
     // Poll for the video every 10 seconds.
     setInterval(() => {
       console.log("Updating video values...");
-      socket.emit('getNewViewCount', { video:'{{ $Entry.Video.Key }}' });
-      socket.emit('getNewLikeCount', { videoKey:'{{ $Entry.Video.Key }}', videoID:'{{ $Entry.Video.VideoID }}' });
+      socket.emit('getNewViewCount', { to:'user', video:'{{ $Entry.Video.Key }}' });
+      socket.emit('getNewLikeCount', { to:'user', videoKey:'{{ $Entry.Video.Key }}', videoID:'{{ $Entry.Video.VideoID }}' });
     }, 10000);
   </script>
   {{- end}}
