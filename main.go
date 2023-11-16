@@ -39,6 +39,7 @@ func main() {
 	loadEnvs()
 
 	log.Println("API_GATEWAY_URL:", API_GATEWAY_URL)
+	log.Println("BACKEND_URL:", BACKEND_URL)
 
 	// Create templates.
 	if debug {

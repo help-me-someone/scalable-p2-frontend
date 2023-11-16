@@ -107,7 +107,7 @@
   // Handle when the websocket sends back notifications.
   socket.on("updateNotifications", (info) => {
       document.getElementById("notif-count").innerHTML = currentNotifCount + info.count;
-      currentNotifCount = info.count;
+      currentNotifCount += info.count;
       notifCountContainer.style.display = (info.count > 0) ? "block" : "none";
 
       console.log(info.notifications);
