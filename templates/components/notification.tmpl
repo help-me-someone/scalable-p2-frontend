@@ -80,7 +80,7 @@
 
     const clickAction = `@click="handleNotification({id: '${info.id}', link: 'watch/${info.videoOwner}/${info.videoKey}/0'})"`
     const res = `
-        <a ${clickAction} class="flex hover:bg-surface-2 ${bgColor} text-center items-center gap-2 w-full px-2 py-2.5 text-sm">
+        <a ${clickAction} class="flex hover:bg-surface-2 ${bgColor} last-of-type:rounded-b-md text-center items-center gap-2 w-full px-2 py-2.5 text-sm">
             ${alertIcon}
           ${info.message}
         </a>
